@@ -1,0 +1,5 @@
+bin/*
+build/*
+data/Scenes/Cache/*
+extern/*
+lib/*
