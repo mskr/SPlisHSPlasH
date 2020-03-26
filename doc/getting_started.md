@@ -2,9 +2,40 @@
 
 This page should give you a short overview of SPlisHSPlasH.
 
-SPlisHSPlasH currently consists of different simulators and tools which are introduced in the following:
+## Before you build
+
+Visual Studio: Set configuration to release with debug info (RelWithDebInfo) to get reasonable frametimes.
+
+## Differences to other CFD simulators
+
+There are no meshes.
+Space is empty before fluid enters in the form of particles.
+The "problem domain" is infinite, in the sense of floating point infinity.
+In other words, Lagrangian instead of Eulerian worldview.
+
+There are no steady states.
+You can always watch a simulation evolve.
+You could call this transient simulation.
+
+There is no control over convergence.
+Fluid equations are fulfilled in different ways to different degrees by the available methods.
+
+There are no boundary conditions and no initial conditions.
+No inlets, no walls, no contacts, no outlets.
+Instead, there are emitters and animation fields.
+
+There is the concept of scenes.
+For setup, you can sample cubes, spheres or arbitrary meshes with particles.
+Rigid bodies can participate and there is collision detection.
+
+There are no turbulence models.
+
+Fluids can represent elastic bodies.
+The constitutive material model is Linear Elasticity (Young's modulus, Poisson's ratio).
 
 ## Simulators 
+
+SPlisHSPlasH currently consists of different simulators and tools which are introduced in the following:
 
 ### StaticBoundarySimulator
 
