@@ -1,5 +1,6 @@
 bin/*
 build/*
 data/Scenes/Cache/*
+data/Scenes/*/Cache/*
 extern/*
 lib/*
