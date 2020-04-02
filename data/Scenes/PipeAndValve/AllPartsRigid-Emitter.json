@@ -1,12 +1,40 @@
 {
 	"RigidBodies": [
 		{
-			"geometryFile": "../../models/PipeAndValve.obj",
+			"geometryFile": "../../models/PipeAndValve/Pipe.obj",
 			"translation": [ 0, 0, 0 ],
-			"scale": 0.2,
+			"scale": [ 0.2, 0.2, 0.2 ],
 			"color": [ 0.1, 0.4, 0.6, 1.0 ],
+
 			"isDynamic": false,
 			"isWall": false,
+
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 60, 20, 20 ]
+		},
+		{
+			"geometryFile": "../../models/PipeAndValve/Cusp1.obj",
+			"translation": [ 0, 0, 0 ],
+			"scale": [ 0.2, 0.2, 0.2 ],
+			"color": [ 1, 0, 0, 1.0 ],
+
+			"isDynamic": false,
+			"isWall": false,
+
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 20, 20, 20 ]
+		},
+		{
+			"geometryFile": "../../models/PipeAndValve/Cusp2.obj",
+			"translation": [ 0, 0, 0 ],
+			"scale": [ 0.2, 0.2, 0.2 ],
+			"color": [ 1, 0.4, 0, 1.0 ],
+
+			"isDynamic": false,
+			"isWall": false,
+
 			"mapInvert": false,
 			"mapThickness": 0.0,
 			"mapResolution": [ 20, 20, 20 ]
@@ -31,8 +59,8 @@
 		"colorField": "velocity",
 		"maxEmitterParticles": 100000,
 		"emitterReuseParticles": true,
-		"emitterBoxMin": [-40,-20,-20],
-		"emitterBoxMax": [ 40, 20, 20]
+		"emitterBoxMin": [-2,-4,-4],
+		"emitterBoxMax": [ 6, 4, 4]
 	},
 	"Configuration": {
 		"simulationMethod": 4,
@@ -59,7 +87,7 @@
 
 		"enablePartioExport": true,
 		"dataExportFPS": 1,
-
+		
 		"pause": false,
 		"pauseAt": 10
 	},
@@ -107,7 +135,7 @@
 			"elasticityMethod": 0,
 			"_elasticityMethods": "0: None | 1: Becker et al. 2009 | 2: Peer et al. 2018",
 			"youngsModulus": 100000.0,
-			"poissonsRatio": 0.3,
+			"poissonsRatio": 0.3
 		}
 	}
 }
