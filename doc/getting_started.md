@@ -13,6 +13,10 @@ Space is empty before fluid enters in the form of particles.
 The "problem domain" is infinite, in the sense of floating point infinity.
 In other words, Lagrangian instead of Eulerian worldview.
 
+Free surfaces are possible without multiphase flow.
+This is a rather extraterrestrial idea.
+For physicality one can and should use multiple phases.
+
 There are no steady states.
 You can always watch a simulation evolve.
 You could call this transient simulation.
@@ -29,6 +33,10 @@ For setup, you can sample cubes, spheres or arbitrary meshes with particles.
 Rigid bodies can participate and there is collision detection.
 
 There are no turbulence models.
+At least nothing based on Reynolds decomposition (yet?).
+Since no simplification like the Reynolds average is used, everything can be considered a large eddy simulation.
+
+Instead of turbulence, the concept of vorticity is used.
 
 Fluids can represent elastic bodies.
 The constitutive material model is Linear Elasticity (Young's modulus, Poisson's ratio).
