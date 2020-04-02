@@ -467,6 +467,11 @@ void SimulatorBase::runSimulation()
 
 void SimulatorBase::cleanup()
 {
+	bool tmp = m_enablePartioExport;
+	m_enablePartioExport = true;
+	particleExport("ParticlesAt" + std::to_string(TimeManager::getCurrent()->getTime()));
+	m_enablePartioExport = tmp;
+
 	for (unsigned int i = 0; i < m_scene.boundaryModels.size(); i++)
 		delete m_scene.boundaryModels[i];
 	m_scene.boundaryModels.clear();

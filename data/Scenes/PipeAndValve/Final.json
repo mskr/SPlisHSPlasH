@@ -100,8 +100,6 @@
 		"maxIterationsV": 100,
 		"maxErrorV": 0.1,
 
-		"enablePartioExport": true,
-		"dataExportFPS": 1,
 		"pause": false,
 		"pauseAt": 10
 	},
