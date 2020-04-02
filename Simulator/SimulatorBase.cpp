@@ -677,13 +677,26 @@ void SimulatorBase::reset()
 
 void SimulatorBase::timeStep()
 {
+	// Check stopping criteria.
+	// Always export after stopAt and pauseAt.
+	//TODO Do a fraction of time step if necessary.
 	const Real stopAt = getValue<Real>(SimulatorBase::STOP_AT);
-	if (m_gui && (stopAt > 0.0) && (stopAt < TimeManager::getCurrent()->getTime()))
+	if (m_gui && (stopAt > 0.0) && (stopAt < TimeManager::getCurrent()->getTime())) {
+		bool tmp = m_enablePartioExport;
+		m_enablePartioExport = true;
+		particleExport("ParticlesAt" + std::to_string(TimeManager::getCurrent()->getTime()));
+		m_enablePartioExport = tmp;
 		m_gui->stop();
+	}
 
 	const Real pauseAt = getValue<Real>(SimulatorBase::PAUSE_AT);
-	if ((pauseAt > 0.0) && (pauseAt < TimeManager::getCurrent()->getTime()))
+	if ((pauseAt > 0.0) && (pauseAt < TimeManager::getCurrent()->getTime())) {
+		bool tmp = m_enablePartioExport;
+		m_enablePartioExport = true;
+		particleExport("ParticlesAt" + std::to_string(TimeManager::getCurrent()->getTime()));
+		m_enablePartioExport = tmp;
 		setValue(SimulatorBase::PAUSE, true);
+	}
 
 	if (getValue<bool>(SimulatorBase::PAUSE))
 		return;
@@ -1196,7 +1209,7 @@ void SimulatorBase::rigidBodyExport()
 	}
 }
 
-void SimulatorBase::particleExport()
+void SimulatorBase::particleExport(std::string fileName = "")
 {	
 	std::string partioExportPath = FileSystem::normalizePath(m_outputPath + "/partio");
 	std::string vtkExportPath = FileSystem::normalizePath(m_outputPath + "/vtk");
@@ -1209,8 +1222,13 @@ void SimulatorBase::particleExport()
 	for (unsigned int i = 0; i < sim->numberOfFluidModels(); i++)
 	{
 		FluidModel *model = sim->getFluidModel(i);
-		std::string fileName = "ParticleData";
-		fileName = fileName + "_" + model->getId() + "_" + std::to_string(m_frameCounter);
+		if (fileName.empty()) {
+			fileName = "ParticleData";
+			fileName = fileName + "_" + model->getId() + "_" + std::to_string(m_frameCounter);
+		}
+		else {
+			fileName = model->getId() + fileName;
+		}
 
 		if (m_enablePartioExport)
 		{

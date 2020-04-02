@@ -123,7 +123,7 @@ namespace SPH
 		void initVolumeMap(std::vector<Vector3r> &x, std::vector<unsigned int> &faces, const Utilities::SceneLoader::BoundaryData *boundaryData, const bool md5, const bool isDynamic, BoundaryModel_Bender2019 *boundaryModel);
 
 		void readParameters();
-		void particleExport();
+		void particleExport(std::string);
 		void rigidBodyExport();
 		void writeParticlesPartio(const std::string &fileName, FluidModel *model);
 		void writeParticlesVTK(const std::string &fileName, FluidModel *model);
