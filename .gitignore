@@ -1,7 +1,9 @@
+bin
+build
 bin/*
 build/*
 data/Scenes/Cache/*
 data/Scenes/*/Cache/*
 extern/*
 lib/*
-Utilities/Version.h
+Utilities/*
