@@ -1,0 +1,183 @@
+{
+	"RigidBodies": [
+		{
+			"geometryFile": "../../models/NewPipeAndValve/Support.obj",
+			"translation": [ 0, 0, 0 ],
+			"scale": [ 0.2, 0.2, 0.2 ],
+			"color": [ 0.1, 0.4, 0.6, 1.0 ],
+
+			"isDynamic": false,
+			"isWall": true,
+
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 60, 20, 20 ]
+		}
+	],
+	"FluidModels": [
+		{
+			"id": "Half1",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/Half1-s02.bgeo"
+		},
+		{
+			"id": "Half2",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/Half2-s02.bgeo"
+		},
+		{
+			"id": "FluidBefore",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/FluidBefore-s02.bgeo"
+		},
+		{
+			"id": "FluidBehind",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/FluidBehind-s02.bgeo"
+		}
+	],
+	"Emitters": [
+		{
+			"id": "IncomingFluid",
+			"type": 1,
+			"width": 13,
+			"translation": [ -3, 0, 0 ],
+			"rotationAxis": [ 0, 1, 0 ],
+
+			"velocity": 0.5
+		}
+	],
+
+
+
+
+
+	"IncomingFluid": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 0,
+
+		"maxEmitterParticles": 1000,
+		"emitterReuseParticles": true,
+		"emitterBoxMin": [ -40, -20, -20 ],
+		"emitterBoxMax": [ 40, 20, 20 ]
+	},
+	"FluidBefore": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 0
+	},
+	"FluidBehind": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 0
+	},
+	"Half1": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 1,
+
+		"elasticityMethod": 2,
+		"youngsModulus": 100000.0,
+		"poissonsRatio": 0.3
+	},
+	"Half2": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 1,
+
+		"elasticityMethod": 2,
+		"youngsModulus": 100000.0,
+		"poissonsRatio": 0.3
+	},
+
+
+
+
+	"Configuration": {
+		"simulationMethod": 4,
+		"boundaryHandlingMethod": 2,
+
+		"gravitation": [ 0, 0, 0 ],
+		"particleRadius": 0.025,
+
+		"timeStepSize": 0.005,
+		"numberOfStepsPerRenderUpdate": 4,
+		"cflMethod": 1,
+		"cflFactor": 1,
+		"cflMaxTimeStepSize": 0.005,
+		"maxIterations": 100,
+		"maxError": 0.05,
+
+		"stiffness": 50000,
+		"exponent": 7,
+		"velocityUpdateMethod": 0,
+		"enableDivergenceSolver": true,
+		"maxIterationsV": 100,
+		"maxErrorV": 0.1,
+
+		"pause": false,
+		"pauseAt": 0.005
+	},
+	"Comments": {
+		"Configuration": {
+			"simulationMethod": {
+				"0": "Weakly compressible SPH for free surface flows (WCSPH)",
+				"1": "Predictive-corrective incompressible SPH (PCISPH)",
+				"2": "Position based fluids (PBF)",
+				"3": "Implicit incompressible SPH (IISPH)",
+				"4": "Divergence-free smoothed particle hydrodynamics (DFSPH)",
+				"5": "Projective Fluids (dynamic boundaries not supported yet)"
+			},
+			"boundaryHandlingMethod": {
+				"0": "particle-based boundaries (Akinci et al. 2012)",
+				"1": "density maps (Koschier et al. 2017)",
+				"2": "volume maps (Bender et al. 2019)"
+			},
+			"stiffness": "Used by WCSPH and PF",
+			"exponent": "Used by WCSPH",
+			"velocityUpdateMethod": {
+				"0": "PBF First Order Update",
+				"1": "PBF Second Order Update"
+			},
+			"enableDivergenceSolver": "Used by DFSPH"
+		},
+		"Fluid": {
+			"surfaceTension": 0.2,
+			"surfaceTensionMethod": {
+				"0": "None",
+				"1": "Becker & Teschner 2007",
+				"2": "Akinci et al. 2013",
+				"3": "He et al. 2014"
+			},
+
+			"viscosity": 0.01,
+			"viscosityMethod": {
+				"0": "None",
+				"1": "Standard",
+				"2": "XSPH",
+				"3": "Bender and Koschier 2017",
+				"4": "Peer et al. 2015",
+				"5": "Peer et al. 2016",
+				"6": "Takahashi et al. 2015 (improved)",
+				"7": "Weiler et al. 2018"
+			},
+
+			"vorticityMethod": {
+				"0": "None",
+				"1": "Micropolar model",
+				"2": "Vorticity confinement"
+			},
+
+			"dragMethod": {
+				"0": "None",
+				"1": "Macklin et al. 2014",
+				"2": "Gissler et al. 2017"
+			},
+
+			"elasticityMethod": {
+				"0": "None",
+				"1": "Becker et al. 2009",
+				"2": "Peer et al. 2018"
+			},
+			"youngsModulus": 100000.0,
+			"poissonsRatio": 0.3
+		}
+	}
+}
