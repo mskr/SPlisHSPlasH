@@ -8,10 +8,15 @@ Visual Studio: Set configuration to release with debug info (RelWithDebInfo) to 
 
 ## Differences to other CFD simulators
 
-There are no meshes.
-Space is empty before fluid enters in the form of particles.
+There are no meshes and no elements.
+Material is still represented by computational nodes.
+The computational nodes are particles.
+
+Space is "empty" before material enters.
+This is the Lagrangian instead of the Eulerian worldview.
+
+There is no problem domain.
 The "problem domain" is infinite, in the sense of floating point infinity.
-In other words, Lagrangian instead of Eulerian worldview.
 
 Free surfaces are possible without multiphase flow.
 This is a rather extraterrestrial idea.
@@ -23,12 +28,18 @@ You could call this transient simulation.
 
 There is no control over convergence.
 Fluid equations are fulfilled in different ways to different degrees by the available methods.
+This is a bit hard to describe.
 
 There are no boundary conditions and no initial conditions.
 No inlets, no walls, no contacts, no outlets.
-Instead, there are emitters and animation fields.
+Instead, there are emitters, animation fields and rigid bodies.
 
-There is the concept of scenes.
+The number of computational nodes is dynamic.
+However, one may want to control the scale of the computation.
+To this end, emitters can have a maximum number of particles,
+and a bounding box, where leaving particles are reused.
+
+There is the concept of scenes instead of cases.
 For setup, you can sample cubes, spheres or arbitrary meshes with particles.
 Rigid bodies can participate and there is collision detection.
 
@@ -40,6 +51,21 @@ Instead of turbulence, the concept of vorticity is used.
 
 Fluids can represent elastic bodies.
 The constitutive material model is Linear Elasticity (Young's modulus, Poisson's ratio).
+
+## TODO
+
+- Export velocity field to regular grid
+  - Seed new particles at grid cell centers
+  - Use current SPH method to get the velocity from the pressure solve
+
+- Instant scene preview
+  - Watch json file
+  - Extract names and geometries
+  - Render as schematic view
+  - Make it easy to avoid overlaps
+  - Python could be nice for this
+    - manim is nice for text and lines
+    - blender can import partio
 
 ## Simulators 
 
