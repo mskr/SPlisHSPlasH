@@ -1,7 +1,7 @@
 {
 	"RigidBodies": [
 		{
-			"geometryFile": "../../models/PipeAndValve/Pipe.obj",
+			"geometryFile": "../../models/NewPipeAndValve/Support.obj",
 			"translation": [ 0, 0, 0 ],
 			"scale": [ 0.2, 0.2, 0.2 ],
 			"color": [ 0.1, 0.4, 0.6, 1.0 ],
@@ -12,78 +12,90 @@
 			"mapInvert": false,
 			"mapThickness": 0.0,
 			"mapResolution": [ 60, 20, 20 ]
-		},
-		{
-			"geometryFile": "../../models/PipeAndValve/Cusp1.obj",
-			"translation": [ 0, 0, 0 ],
-			"scale": [ 0.2, 0.2, 0.2 ],
-			"color": [ 1, 0, 0, 1.0 ],
-
-			"isDynamic": false,
-			"isWall": false,
-
-			"mapInvert": false,
-			"mapThickness": 0.0,
-			"mapResolution": [ 20, 20, 20 ]
-		},
-		{
-			"geometryFile": "../../models/PipeAndValve/Cusp2.obj",
-			"translation": [ 0, 0, 0 ],
-			"scale": [ 0.2, 0.2, 0.2 ],
-			"color": [ 1, 0.4, 0, 1.0 ],
-
-			"isDynamic": false,
-			"isWall": false,
-
-			"mapInvert": false,
-			"mapThickness": 0.0,
-			"mapResolution": [ 20, 20, 20 ]
 		}
 	],
 	"FluidModels": [
 		{
-			"id": "FluidVolume",
-			"particleFile": "../../models/PipeAndValve/Sampled/Fluid-scale02.bgeo"
+			"id": "Half1",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/Half1-s02.bgeo"
+		},
+		{
+			"id": "Half2",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/Half2-s02.bgeo"
+		},
+		{
+			"id": "FluidBefore",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/FluidBefore-s02.bgeo"
+		},
+		{
+			"id": "FluidBehind",
+			"particleFile": "../../models/NewPipeAndValve/Sampled/FluidBehind-s02.bgeo"
 		}
 	],
 	"Emitters": [
 		{
 			"id": "IncomingFluid",
 			"type": 1,
-			"width": 16,
-			"translation": [ 4, 0, 0 ],
+			"width": 13,
+			"translation": [ -3, 0, 0 ],
 			"rotationAxis": [ 0, 1, 0 ],
-			"rotationAngle": 3.1415926535897932384626433832795,
 
-			"velocity": 2,
-			"emitStartTime": 0,
-			"emitEndTime": 4
+			"velocity": 0.5
 		}
 	],
-	"FluidVolume": {
-		"density0": 1000,
 
-		"colorField": "velocity",
-		"colorMapType": 0
-	},
+
+
+
+
 	"IncomingFluid": {
 		"density0": 1000,
-
 		"colorField": "velocity",
 		"colorMapType": 0,
 
-		"maxEmitterParticles": 100000,
+		"maxEmitterParticles": 1000,
 		"emitterReuseParticles": true,
 		"emitterBoxMin": [ -40, -20, -20 ],
 		"emitterBoxMax": [ 40, 20, 20 ]
 	},
+	"FluidBefore": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 0
+	},
+	"FluidBehind": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 0
+	},
+	"Half1": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 1,
+
+		"elasticityMethod": 2,
+		"youngsModulus": 100000.0,
+		"poissonsRatio": 0.3
+	},
+	"Half2": {
+		"density0": 1000,
+		"colorField": "velocity",
+		"colorMapType": 1,
+
+		"elasticityMethod": 2,
+		"youngsModulus": 100000.0,
+		"poissonsRatio": 0.3
+	},
+
+
+
+
 	"Configuration": {
 		"simulationMethod": 4,
 		"boundaryHandlingMethod": 2,
 
 		"gravitation": [ 0, 0, 0 ],
 		"particleRadius": 0.025,
-		"particleAttributes": "density;velocity",
 
 		"timeStepSize": 0.005,
 		"numberOfStepsPerRenderUpdate": 4,
@@ -101,7 +113,7 @@
 		"maxErrorV": 0.1,
 
 		"pause": false,
-		"pauseAt": 10
+		"pauseAt": 0.005
 	},
 	"Comments": {
 		"Configuration": {

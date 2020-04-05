@@ -1,63 +1,10 @@
 {
 	"RigidBodies": [
-		{
-			"geometryFile": "../../models/PipeAndValve/Pipe.obj",
-			"translation": [ 0, 0, 0 ],
-			"scale": [ 0.2, 0.2, 0.2 ],
-			"color": [ 0.1, 0.4, 0.6, 1.0 ],
-
-			"isDynamic": false,
-			"isWall": true,
-
-			"mapInvert": false,
-			"mapThickness": 0.0,
-			"mapResolution": [ 60, 20, 20 ]
-		},
-		{
-			"geometryFile": "../../models/PipeAndValve/Cusp1.obj",
-			"translation": [ 0, 0, 0 ],
-			"scale": [ 0.2, 0.2, 0.2 ],
-			"color": [ 1, 0, 0, 1.0 ],
-
-			"isDynamic": false,
-			"isWall": false,
-
-			"mapInvert": false,
-			"mapThickness": 0.0,
-			"mapResolution": [ 20, 20, 20 ]
-		},
-		{
-			"geometryFile": "../../models/PipeAndValve/Cusp2.obj",
-			"translation": [ 0, 0, 0 ],
-			"scale": [ 0.2, 0.2, 0.2 ],
-			"color": [ 1, 0.4, 0, 1.0 ],
-
-			"isDynamic": false,
-			"isWall": false,
-
-			"mapInvert": false,
-			"mapThickness": 0.0,
-			"mapResolution": [ 20, 20, 20 ]
-		}
 	],
 	"FluidModels": [
 		{
 			"id": "FluidVolume",
 			"particleFile": "../../models/PipeAndValve/Sampled/Fluid-scale02.bgeo"
-		}
-	],
-	"Emitters": [
-		{
-			"id": "IncomingFluid",
-			"type": 1,
-			"width": 16,
-			"translation": [ 4, 0, 0 ],
-			"rotationAxis": [ 0, 1, 0 ],
-			"rotationAngle": 3.1415926535897932384626433832795,
-
-			"velocity": 2,
-			"emitStartTime": 0,
-			"emitEndTime": 4
 		}
 	],
 	"FluidVolume": {
@@ -66,22 +13,31 @@
 		"colorField": "velocity",
 		"colorMapType": 0
 	},
-	"IncomingFluid": {
-		"density0": 1000,
 
-		"colorField": "velocity",
-		"colorMapType": 0,
 
-		"maxEmitterParticles": 100000,
-		"emitterReuseParticles": true,
-		"emitterBoxMin": [ -40, -20, -20 ],
-		"emitterBoxMax": [ 40, 20, 20 ]
-	},
+	"AnimationFields": [
+		{
+			"particleField": "velocity",
+			"translation": [ 0, 0, 0 ],
+			"rotationAxis": [ 0, 0, 1 ],
+			"rotationAngle": 0.0,
+			"scale": [ 4, 4, 4 ],
+			"shapeType": 0,
+			"expression_x": "0",
+			"expression_y": "0",
+			"expression_z": ""
+		}
+	],
+
+
+
+
+
 	"Configuration": {
 		"simulationMethod": 4,
 		"boundaryHandlingMethod": 2,
 
-		"gravitation": [ 0, 0, 0 ],
+		"gravitation": [ 0, -9.81, 0 ],
 		"particleRadius": 0.025,
 
 		"timeStepSize": 0.005,
