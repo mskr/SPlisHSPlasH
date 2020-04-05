@@ -1,28 +1,29 @@
 {
-	"Configuration": 
-	{
-		"cameraPosition": [0,0,5],
-		"cameraLookat": [0,0,0],
-		"pause": true,
-		"sim2D": true, 
+	"Configuration": {
+		"cameraPosition": [ 0, 0, 5 ],
+		"cameraLookat": [ 0, 0, 0 ],
+		"pause": false,
+		"sim2D": true,
 		"particleRadius": 0.025,
 		"numberOfStepsPerRenderUpdate": 4,
-		"density0": 1000, 
+		"density0": 1000,
 		"simulationMethod": 4,
-		"gravitation": [0,0,0], 
-		"cflMethod": 1, 
+		"gravitation": [ 0, 0, 0 ],
+		"cflMethod": 1,
 		"cflFactor": 1,
 		"cflMaxTimeStepSize": 0.005,
 		"maxIterations": 100,
 		"maxError": 0.1,
 		"maxIterationsV": 100,
-		"maxErrorV": 0.1,		
+		"maxErrorV": 0.1,
 		"stiffness": 50000,
 		"exponent": 7,
 		"velocityUpdateMethod": 0,
 		"enableDivergenceSolver": true,
 		"particleAttributes": "velocity;density",
-		"boundaryHandlingMethod": 2
+		"boundaryHandlingMethod": 2,
+		"pauseAt": 1,
+		"enablePartioExport": true
 	},
 	"Materials": [
 		{
