@@ -16,25 +16,25 @@
 	],
 	"FluidModels": [
 		{
-			"id": "Half1",
+			"id": "Wall",
 			"particleFile": "../../models/NewPipeAndValve/Sampled/Half1-s02.bgeo"
 		},
 		{
-			"id": "Half2",
+			"id": "Wall",
 			"particleFile": "../../models/NewPipeAndValve/Sampled/Half2-s02.bgeo"
 		},
 		{
-			"id": "FluidBefore",
+			"id": "Fluid",
 			"particleFile": "../../models/NewPipeAndValve/Sampled/FluidBefore-s02.bgeo"
 		},
 		{
-			"id": "FluidBehind",
+			"id": "Fluid",
 			"particleFile": "../../models/NewPipeAndValve/Sampled/FluidBehind-s02.bgeo"
 		}
 	],
 	"Emitters": [
 		{
-			"id": "IncomingFluid",
+			"id": "Fluid",
 			"type": 1,
 			"width": 13,
 			"translation": [ -3, 0, 0 ],
@@ -43,49 +43,31 @@
 			"velocity": 0.5
 		}
 	],
+	"Materials": [
+		{
+			"id": "Wall",
+			"colorField": "velocity",
+			"colorMapType": 1,
 
+			"density0": 1000,
 
+			"elasticityMethod": 2,
+			"youngsModulus": 100000.0,
+			"poissonsRatio": 0.3
+		},
+		{
+			"id": "Fluid",
+			"colorField": "velocity",
+			"colorMapType": 0,
 
+			"density0": 1000,
 
-
-	"IncomingFluid": {
-		"density0": 1000,
-		"colorField": "velocity",
-		"colorMapType": 0,
-
-		"maxEmitterParticles": 1000,
-		"emitterReuseParticles": true,
-		"emitterBoxMin": [ -40, -20, -20 ],
-		"emitterBoxMax": [ 40, 20, 20 ]
-	},
-	"FluidBefore": {
-		"density0": 1000,
-		"colorField": "velocity",
-		"colorMapType": 0
-	},
-	"FluidBehind": {
-		"density0": 1000,
-		"colorField": "velocity",
-		"colorMapType": 0
-	},
-	"Half1": {
-		"density0": 1000,
-		"colorField": "velocity",
-		"colorMapType": 1,
-
-		"elasticityMethod": 2,
-		"youngsModulus": 100000.0,
-		"poissonsRatio": 0.3
-	},
-	"Half2": {
-		"density0": 1000,
-		"colorField": "velocity",
-		"colorMapType": 1,
-
-		"elasticityMethod": 2,
-		"youngsModulus": 100000.0,
-		"poissonsRatio": 0.3
-	},
+			"maxEmitterParticles": 1000,
+			"emitterReuseParticles": true,
+			"emitterBoxMin": [ -40, -20, -20 ],
+			"emitterBoxMax": [ 40, 20, 20 ]
+		}
+	],
 
 
 
