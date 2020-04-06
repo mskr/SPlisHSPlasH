@@ -6,6 +6,7 @@
 #include "Utilities/PartioReaderWriter.h"
 #include "Utilities/FileSystem.h"
 #include "SPlisHSPlasH/Simulation.h"
+#include "SPlisHSPlasH/TimeStep.h"
 #include "SPlisHSPlasH/TimeManager.h"
 #include "Utilities/Logger.h"
 
@@ -27,6 +28,9 @@ int Exporter::PARTICLE_EXPORT_ATTRIBUTES = -1;
 
 Real Exporter::framesPerSecond = 25;
 std::string Exporter::particleAttributes = "velocity";
+
+AlignedBox3r Exporter::gridExportRegion = AlignedBox3r(Vector3r(-1, -1, -1), Vector3r(1, 1, 1));
+Vector3u Exporter::gridExportResolution = Vector3u(100, 100, 100);
 
 Exporter::Exporter() {
 	m_isFirstFrameVTK = true;
@@ -52,14 +56,17 @@ void Exporter::rigidBodyExport(std::string scenePath, std::string temporalIdenti
 	}
 }
 
-void Exporter::particleExport(std::string exportName, std::string temporalIdentifier, std::string folder, bool partio, bool vtk)
+void Exporter::particleExport(std::string exportName, std::string temporalIdentifier, std::string folder, bool partio, bool vtk, bool inviwo)
 {
 	std::string partioExportPath = FileSystem::normalizePath(m_outputPath + "/" + folder + "/partio");
 	std::string vtkExportPath = FileSystem::normalizePath(m_outputPath + "/" + folder + "/vtk");
+	std::string inviwoExportPath = FileSystem::normalizePath(m_outputPath + "/" + folder + "/inviwo");
 	if (partio)
 		FileSystem::makeDirs(partioExportPath);
 	if (vtk)
 		FileSystem::makeDirs(vtkExportPath);
+	if (inviwo)
+		FileSystem::makeDirs(inviwoExportPath);
 
 	Simulation *sim = Simulation::getCurrent();
 	for (unsigned int i = 0; i < sim->numberOfFluidModels(); i++)
@@ -80,6 +87,45 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 		{
 			std::string exportFileName = FileSystem::normalizePath(vtkExportPath + "/" + fileName);
 			writeParticlesVTK(exportFileName + ".vtk", model);
+		}
+		if (inviwo) {
+			std::string exportFileName = FileSystem::normalizePath(inviwoExportPath + "/" + fileName);
+
+			// We try to insert probes into the space, that do not influence the particles, but receive the influence from them, to sample a field quantity at its location.
+
+			Vector3r step;
+			std::vector<Vector3r> particles = linspace3D(gridExportRegion, gridExportResolution, &step);
+			size_t numNewParticles = particles.size();
+			  // make sure that particles in this box are not so close that they generate forces with each other, but only receive forces from existing particles
+			std::vector<Vector3r> velocities(particles.size(), Vector3r(0));
+			// create a new simulation object with only this single model
+			Simulation* tmpSim = new Simulation();
+			tmpSim->init(sim->getParticleRadius(), false);
+			// ensure same method so that we get correct field quantities on new particles
+			tmpSim->setSimulationMethod(sim->getSimulationMethod());
+			// add the new particles to the array of the current model, so that they share the same id <=> same material
+			for (unsigned int i = 0; model->numberOfParticles(); i++) {
+				particles.push_back(model->getPosition(i));
+				velocities.push_back(model->getVelocity(i));
+			}
+			tmpSim->addFluidModel(model->getId(), particles.size(), particles.data(), velocities.data(), 0);
+			// set as sim as current
+			Simulation::setCurrent(tmpSim);
+			// do a time step
+			// - this will internally get the current sim and iterate over all fluid models, which is our tmp sim with single model
+			// - does a computation with current SPH method to resolve pressure and apply forces
+			// - does even an explicit time integration internally, to get velocity from acceleration
+			sim->getTimeStep()->step();
+			// get velocities of new particles => export
+			writeInviwoVolume<Vector3r>(exportFileName, velocities.data(), 0.0f, 5.0f, gridExportResolution, step);
+			// delete tmp sim and reset current
+			Simulation::setCurrent(sim);
+			delete tmpSim;
+			// Simulation can now preceed as if nothing happened
+
+			// Alternatively, we could sample the current FluidModel by getting particle neighbors for each grid point, and not seed more particles.
+			//sim->numberOfNeighbors(0,0,0);
+			//sim->W(Vector3r(0));
 		}
 	}
 }

@@ -23,52 +23,86 @@ public:
 	// Configs
 	static int DATA_EXPORT_FPS; static Real framesPerSecond;
 	static int PARTICLE_EXPORT_ATTRIBUTES; static std::string particleAttributes;
+	static AlignedBox3r gridExportRegion;
+	static Vector3u gridExportResolution;
 
 private:
 
 	// - New feature: regular grid export.
-
-	struct Particle {
-		double x, y, z;
-		double vx, vy, vz;
-	};
-
-	// Regular grid with explicit point storage.
-	struct LinSpace3D {
-		using u32 = std::uint32_t;
-		std::vector<Particle> P;
-		std::array<u32, 3> res;
-		std::array<double, 3> step;
-		void generateVolumePoints(u32* volDim, double* origin, double margin, double* step) {
-			P.resize(volDim[0] * volDim[1] * volDim[2]);
-			for (u32 x = 0; x < volDim[0]; x++) {
-				for (u32 y = 0; y < volDim[1]; y++) {
-					for (u32 z = 0; z < volDim[2]; z++) {
-						u32 row = z + y * volDim[2] + x * volDim[1] * volDim[2];
-						P[row].x = origin[0] - margin + x * step[0];
-						P[row].y = origin[1] - margin + y * step[1];
-						P[row].z = origin[2] - margin + z * step[2];
-					}
+	// - Export velocity field to regular grid (inviwo volume)
+	//   - Seed new particles at grid cell centers
+	//   - Use current SPH method to get the velocity from the pressure solve
+	
+	static std::vector<Vector3r> linspace3D(AlignedBox3r region, Vector3u resolution, Vector3r* outStep = 0, Real margin = 0) {
+		std::vector<Vector3r> P;
+		P.resize(resolution.x * resolution.y * resolution.z);
+		Vector3r step = Vector3r(region.max - region.min).array() / Vector3r(resolution).array();
+		if (outStep) *outStep = step;
+		for (unsigned int x = 0; x < resolution.x; x++) {
+			for (unsigned int y = 0; y < resolution.y; y++) {
+				for (unsigned int z = 0; z < resolution.z; z++) {
+					unsigned int row = z + y * resolution.z + x * resolution.y * resolution.z;
+					P[row].x = region.min.x - margin + x * step.x;
+					P[row].y = region.min.y - margin + y * step.y;
+					P[row].z = region.min.z - margin + z * step.z;
 				}
 			}
 		}
-
-		float* reorderVolumePoints(float* data, u32* res) {
-			// z major to x major order
-			u32 size = res[0] * res[1] * res[2];
-			float* xdata = new float[size];
-			for (u32 z = 0; z < res[2]; z++) {
-				for (u32 y = 0; y < res[1]; y++) {
-					for (u32 x = 0; x < res[0]; x++) {
-						u32 i_old = z + y * res[2] + x * res[1] * res[2];
-						u32 i_new = x + y * res[0] + z * res[0] * res[1];
-						xdata[i_new] = data[i_old];
-					}
+		return P;
+	}
+	
+	static float* reorderLinspace3D(Real* data, Vector3u res) {
+		// z major to x major order
+		size_t size = res.x * res.y * res.z;
+		float* xdata = new float[size];
+		for (unsigned int z = 0; z < res.z; z++) {
+			for (unsigned int y = 0; y < res.y; y++) {
+				for (unsigned int x = 0; x < res.x; x++) {
+					unsigned int i_old = z + y * res.z + x * res.y * res.z;
+					unsigned int i_new = x + y * res.x + z * res.x * res.y;
+					xdata[i_new] = data[i_old];
 				}
 			}
-			return xdata;
 		}
-	};
+		return xdata;
+	}
+
+	template<typename T>
+	static void writeInviwoVolume(std::string name, const void* data, float min, float max, Vector3u res, Vector3r step, bool zMajor = true) {
+
+		// Write inviwo file format
+
+		std::ofstream datFile(name + ".dat");
+		datFile << "Rawfile: " + name + ".raw" << std::endl;
+
+		if (zMajor) // need to swizzle because of voxel order
+			datFile << "Resolution: " << res.z << " " << res.y << " " << res.x << std::endl;
+		else
+			datFile << "Resolution: " << res.x << " " << res.y << " " << res.z << std::endl;
+
+#ifdef USE_DOUBLE
+		datFile << "Format: Vec3FLOAT64" << std::endl;
+#else
+		datFile << "Format: Vec3FLOAT32" << std::endl;
+#endif
+		datFile << "DataRange: " << min << " " << max << std::endl;
+
+		// set basis so that it transforms texture coords to real units
+		if (zMajor) {
+			datFile << "BasisVector1: " << (double)res.z * step.z << " 0 0" << std::endl;
+			datFile << "BasisVector2: 0 " << (double)res.y * step.y << " 0" << std::endl;
+			datFile << "BasisVector3: 0 0 " << (double)res.x * step.x << std::endl;
+		}
+		else {
+			datFile << "BasisVector1: " << (double)res.x * step.x << " 0 0" << std::endl;
+			datFile << "BasisVector2: 0 " << (double)res.y * step.y << " 0" << std::endl;
+			datFile << "BasisVector3: 0 0 " << (double)res.z * step.z << std::endl;
+		}
+		//datFile << "Offset: 0 0 0" << std::endl; // automatically chosen by inviwo
+
+		std::ofstream rawFile(name + ".raw", std::ios::binary);
+		rawFile.write(reinterpret_cast<const char*>(data), res.x * res.y * res.z * sizeof(T));
+	}
 
 	bool m_isFirstFrameVTK;
 
@@ -79,7 +113,8 @@ public:
 	Exporter();
 	~Exporter();
 
-	void particleExport(std::string exportName = "", std::string temporalIdentifier = "", std::string folder = "", bool partio = enablePartioExport, bool vtk = enableVTKExport);
+	void particleExport(std::string exportName = "", std::string temporalIdentifier = "", std::string folder = "",
+		bool partio = enablePartioExport, bool vtk = enableVTKExport, bool inviwo = false);
 	void writeParticlesPartio(const std::string& fileName, SPH::FluidModel* model);
 	void writeParticlesVTK(const std::string& fileName, SPH::FluidModel* model);
 
@@ -96,7 +131,7 @@ public:
 	}
 
 	void saveParticleSnapshot() {
-		particleExport("", std::to_string(SPH::TimeManager::getCurrent()->getTime()), "snapshots", true, true);
+		particleExport("", std::to_string(SPH::TimeManager::getCurrent()->getTime()), "snapshots", true, false, true);
 	}
 
 	void reset() {

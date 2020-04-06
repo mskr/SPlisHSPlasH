@@ -32,6 +32,7 @@ using Matrix4r = Eigen::Matrix<Real, 4, 4, Eigen::DontAlign>;
 using Matrix5r = Eigen::Matrix<Real, 5, 5, Eigen::DontAlign>;
 using Matrix6r = Eigen::Matrix<Real, 6, 6, Eigen::DontAlign>;
 using Vector2i = Eigen::Matrix<int, 2, 1, Eigen::DontAlign>;
+using Vector3u = Eigen::Matrix<unsigned int, 3, 1, Eigen::DontAlign>;
 using Vector3f = Eigen::Matrix<float, 3, 1, Eigen::DontAlign>;
 using Vector4f = Eigen::Matrix<float, 4, 1, Eigen::DontAlign>;
 using Matrix3f = Eigen::Matrix<float, 3, 3, Eigen::DontAlign>;
