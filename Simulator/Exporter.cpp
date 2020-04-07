@@ -32,6 +32,80 @@ std::string Exporter::particleAttributes = "velocity";
 AlignedBox3r Exporter::gridExportRegion = AlignedBox3r(Vector3r(-1, -1, -1), Vector3r(1, 1, 1));
 Vector3u Exporter::gridExportResolution = Vector3u(100, 100, 100);
 
+// Fill region with regular spaced points
+std::vector<Vector3r> Exporter::linspace3D(AlignedBox3r region, Vector3u resolution, Vector3r* outStep, Real margin) {
+	std::vector<Vector3r> P;
+	P.resize(resolution.x() * resolution.y() * resolution.z());
+	Vector3r step = Vector3r(region.max() - region.min()).array() / resolution.cast<Real>().array();
+	if (outStep) *outStep = step;
+	for (unsigned int x = 0; x < resolution.x(); x++) {
+		for (unsigned int y = 0; y < resolution.y(); y++) {
+			for (unsigned int z = 0; z < resolution.z(); z++) {
+				unsigned int row = z + y * resolution.z() + x * resolution.y() * resolution.z();
+				P[row].x() = region.min().x() - margin + x * step.x();
+				P[row].y() = region.min().y() - margin + y * step.y();
+				P[row].z() = region.min().z() - margin + z * step.z();
+			}
+		}
+	}
+	return P;
+}
+
+// Change point layout: z-major to x-major order
+float* Exporter::reorderLinspace3D(Real* data, Vector3u res) {
+	size_t size = res.x() * res.y() * res.z();
+	float* xdata = new float[size];
+	for (unsigned int z = 0; z < res.z(); z++) {
+		for (unsigned int y = 0; y < res.y(); y++) {
+			for (unsigned int x = 0; x < res.x(); x++) {
+				unsigned int i_old = z + y * res.z() + x * res.y() * res.z();
+				unsigned int i_new = x + y * res.x() + z * res.x() * res.y();
+				xdata[i_new] = data[i_old];
+			}
+		}
+	}
+	return xdata;
+}
+
+// Write inviwo volume file format (.dat and .raw pair)
+template<typename T, unsigned int components>
+void Exporter::writeInviwoVolume(std::string name, const void* data, float min, float max, Vector3u res, Vector3r step, bool zMajor) {
+	std::ofstream datFile(name + ".dat");
+	datFile << "Rawfile: " + name + ".raw" << std::endl;
+
+	if (zMajor) // need to swizzle because of voxel order
+		datFile << "Resolution: " << res.z() << " " << res.y() << " " << res.x() << std::endl;
+	else
+		datFile << "Resolution: " << res.x() << " " << res.y() << " " << res.z() << std::endl;
+
+#ifdef USE_DOUBLE
+	if (components == 1) datFile << "Format: Float64" << std::endl;
+	if (components == 2) datFile << "Format: Vec2FLOAT64" << std::endl;
+	if (components == 3) datFile << "Format: Vec3FLOAT64" << std::endl;
+#else
+	if (components == 1) datFile << "Format: Float32" << std::endl;
+	if (components == 2) datFile << "Format: Vec2FLOAT32" << std::endl;
+	if (components == 3) datFile << "Format: Vec3FLOAT32" << std::endl;
+#endif
+	datFile << "DataRange: " << min << " " << max << std::endl;
+
+	// set basis so that it transforms texture coords to real units
+	if (zMajor) {
+		datFile << "BasisVector1: " << (double)res.z() * step.z() << " 0 0" << std::endl;
+		datFile << "BasisVector2: 0 " << (double)res.y() * step.y() << " 0" << std::endl;
+		datFile << "BasisVector3: 0 0 " << (double)res.x() * step.x() << std::endl;
+	}
+	else {
+		datFile << "BasisVector1: " << (double)res.x() * step.x() << " 0 0" << std::endl;
+		datFile << "BasisVector2: 0 " << (double)res.y() * step.y() << " 0" << std::endl;
+		datFile << "BasisVector3: 0 0 " << (double)res.z() * step.z() << std::endl;
+	}
+	//datFile << "Offset: 0 0 0" << std::endl; // automatically chosen by inviwo
+
+	std::ofstream rawFile(name + ".raw", std::ios::binary);
+	rawFile.write(reinterpret_cast<const char*>(data), res.x() * res.y() * res.z() * sizeof(T));
+}
+
 Exporter::Exporter() {
 	m_isFirstFrameVTK = true;
 }
@@ -97,34 +171,54 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 			std::vector<Vector3r> particles = linspace3D(gridExportRegion, gridExportResolution, &step);
 			size_t numNewParticles = particles.size();
 			  // make sure that particles in this box are not so close that they generate forces with each other, but only receive forces from existing particles
-			std::vector<Vector3r> velocities(particles.size(), Vector3r(0));
-			// create a new simulation object with only this single model
-			Simulation* tmpSim = new Simulation();
-			tmpSim->init(sim->getParticleRadius(), false);
-			// ensure same method so that we get correct field quantities on new particles
-			tmpSim->setSimulationMethod(sim->getSimulationMethod());
-			// add the new particles to the array of the current model, so that they share the same id <=> same material
-			for (unsigned int i = 0; model->numberOfParticles(); i++) {
+			std::vector<Vector3r> velocities(particles.size(), Vector3r(0,0,0));
+
+			// merge model and new grid-aligned particles into one array, so that they share the same id <=> same material
+			for (unsigned int i = 0; i < model->numberOfParticles(); i++) {
 				particles.push_back(model->getPosition(i));
 				velocities.push_back(model->getVelocity(i));
 			}
+			// create a new simulation object with only this single model
+			Simulation* tmpSim = new Simulation();
+			tmpSim->init(sim->getParticleRadius(), false);
 			tmpSim->addFluidModel(model->getId(), particles.size(), particles.data(), velocities.data(), 0);
-			// set as sim as current
-			Simulation::setCurrent(tmpSim);
+			FluidModel* tmpModel = tmpSim->getFluidModel(0);
+
+			// ensure same method so that we get correct field quantities on new particles
+			tmpSim->setSimulationMethod(sim->getSimulationMethod());
+
+			// sorting would make it harder to find the grid-aligned particles later
+			tmpSim->setValue<bool>(Simulation::ENABLE_Z_SORT, false);
+
+			//TODO neighboorhood search crashes
+			tmpSim->performNeighborhoodSearch();
+			NeighborhoodSearch *neighborhoodSearch = tmpSim->getNeighborhoodSearch();
+			neighborhoodSearch->update_point_sets();
+			neighborhoodSearch->resize_point_set(tmpModel->getPointSetIndex(), &tmpModel->getPosition(0)[0], tmpModel->numberOfParticles());
+
 			// do a time step
 			// - this will internally get the current sim and iterate over all fluid models, which is our tmp sim with single model
 			// - does a computation with current SPH method to resolve pressure and apply forces
 			// - does even an explicit time integration internally, to get velocity from acceleration
-			sim->getTimeStep()->step();
-			// get velocities of new particles => export
-			writeInviwoVolume<Vector3r>(exportFileName, velocities.data(), 0.0f, 5.0f, gridExportResolution, step);
-			// delete tmp sim and reset current
+			Simulation::setCurrent(tmpSim);
+			tmpSim->getTimeStep()->step();
+
+			// get quantities at grid-aligned particles
+			  // caution: the particles get sorted in neighborhood search!
+			for (unsigned int i = 0; i < numNewParticles; i++) {
+				velocities[i] = tmpModel->getVelocity(i);
+				// can get density in same way
+			}
+
+			writeInviwoVolume<Vector3r, 3>(exportFileName, velocities.data(), 0.0f, 5.0f, gridExportResolution, step);
+
+			// reset, forget
 			Simulation::setCurrent(sim);
 			delete tmpSim;
 			// Simulation can now preceed as if nothing happened
 
 			// Alternatively, we could sample the current FluidModel by getting particle neighbors for each grid point, and not seed more particles.
-			//sim->numberOfNeighbors(0,0,0);
+			//sim->numberOfNeighbors(0,0,0); // WTF is a point_set!?
 			//sim->W(Vector3r(0));
 		}
 	}

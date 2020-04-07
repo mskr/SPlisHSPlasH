@@ -95,7 +95,7 @@
 		"maxErrorV": 0.1,
 
 		"pause": false,
-		"pauseAt": 0.005
+		"pauseAt": 0.01
 	},
 	"Comments": {
 		"Configuration": {

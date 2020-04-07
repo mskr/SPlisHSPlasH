@@ -33,76 +33,12 @@ private:
 	//   - Seed new particles at grid cell centers
 	//   - Use current SPH method to get the velocity from the pressure solve
 	
-	static std::vector<Vector3r> linspace3D(AlignedBox3r region, Vector3u resolution, Vector3r* outStep = 0, Real margin = 0) {
-		std::vector<Vector3r> P;
-		P.resize(resolution.x * resolution.y * resolution.z);
-		Vector3r step = Vector3r(region.max - region.min).array() / Vector3r(resolution).array();
-		if (outStep) *outStep = step;
-		for (unsigned int x = 0; x < resolution.x; x++) {
-			for (unsigned int y = 0; y < resolution.y; y++) {
-				for (unsigned int z = 0; z < resolution.z; z++) {
-					unsigned int row = z + y * resolution.z + x * resolution.y * resolution.z;
-					P[row].x = region.min.x - margin + x * step.x;
-					P[row].y = region.min.y - margin + y * step.y;
-					P[row].z = region.min.z - margin + z * step.z;
-				}
-			}
-		}
-		return P;
-	}
+	static std::vector<Vector3r> linspace3D(AlignedBox3r region, Vector3u resolution, Vector3r* outStep = 0, Real margin = 0);
 	
-	static float* reorderLinspace3D(Real* data, Vector3u res) {
-		// z major to x major order
-		size_t size = res.x * res.y * res.z;
-		float* xdata = new float[size];
-		for (unsigned int z = 0; z < res.z; z++) {
-			for (unsigned int y = 0; y < res.y; y++) {
-				for (unsigned int x = 0; x < res.x; x++) {
-					unsigned int i_old = z + y * res.z + x * res.y * res.z;
-					unsigned int i_new = x + y * res.x + z * res.x * res.y;
-					xdata[i_new] = data[i_old];
-				}
-			}
-		}
-		return xdata;
-	}
+	static float* reorderLinspace3D(Real* data, Vector3u res);
 
-	template<typename T>
-	static void writeInviwoVolume(std::string name, const void* data, float min, float max, Vector3u res, Vector3r step, bool zMajor = true) {
-
-		// Write inviwo file format
-
-		std::ofstream datFile(name + ".dat");
-		datFile << "Rawfile: " + name + ".raw" << std::endl;
-
-		if (zMajor) // need to swizzle because of voxel order
-			datFile << "Resolution: " << res.z << " " << res.y << " " << res.x << std::endl;
-		else
-			datFile << "Resolution: " << res.x << " " << res.y << " " << res.z << std::endl;
-
-#ifdef USE_DOUBLE
-		datFile << "Format: Vec3FLOAT64" << std::endl;
-#else
-		datFile << "Format: Vec3FLOAT32" << std::endl;
-#endif
-		datFile << "DataRange: " << min << " " << max << std::endl;
-
-		// set basis so that it transforms texture coords to real units
-		if (zMajor) {
-			datFile << "BasisVector1: " << (double)res.z * step.z << " 0 0" << std::endl;
-			datFile << "BasisVector2: 0 " << (double)res.y * step.y << " 0" << std::endl;
-			datFile << "BasisVector3: 0 0 " << (double)res.x * step.x << std::endl;
-		}
-		else {
-			datFile << "BasisVector1: " << (double)res.x * step.x << " 0 0" << std::endl;
-			datFile << "BasisVector2: 0 " << (double)res.y * step.y << " 0" << std::endl;
-			datFile << "BasisVector3: 0 0 " << (double)res.z * step.z << std::endl;
-		}
-		//datFile << "Offset: 0 0 0" << std::endl; // automatically chosen by inviwo
-
-		std::ofstream rawFile(name + ".raw", std::ios::binary);
-		rawFile.write(reinterpret_cast<const char*>(data), res.x * res.y * res.z * sizeof(T));
-	}
+	template<typename T, unsigned int components>
+	static void writeInviwoVolume(std::string name, const void* data, float min, float max, Vector3u res, Vector3r step, bool zMajor = true);
 
 	bool m_isFirstFrameVTK;
 
