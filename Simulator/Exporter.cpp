@@ -71,7 +71,9 @@ float* Exporter::reorderLinspace3D(Real* data, Vector3u res) {
 template<typename T, unsigned int components>
 void Exporter::writeInviwoVolume(std::string name, const void* data, float min, float max, Vector3u res, Vector3r step, bool zMajor) {
 	std::ofstream datFile(name + ".dat");
-	datFile << "Rawfile: " + name + ".raw" << std::endl;
+	std::vector<std::string> parts;
+	StringTools::tokenize(name, parts, "/");
+	datFile << "Rawfile: " + parts[parts.size() - 1] + ".raw" << std::endl;
 
 	if (zMajor) // need to swizzle because of voxel order
 		datFile << "Resolution: " << res.z() << " " << res.y() << " " << res.x() << std::endl;
