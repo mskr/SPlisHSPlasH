@@ -30,7 +30,7 @@ Real Exporter::framesPerSecond = 25;
 std::string Exporter::particleAttributes = "velocity";
 
 AlignedBox3r Exporter::gridExportRegion = AlignedBox3r(Vector3r(-1, -1, -1), Vector3r(1, 1, 1));
-Vector3u Exporter::gridExportResolution = Vector3u(100, 100, 100);
+Vector3u Exporter::gridExportResolution = Vector3u(10, 10, 10);
 
 // Fill region with regular spaced points
 std::vector<Vector3r> Exporter::linspace3D(AlignedBox3r region, Vector3u resolution, Vector3r* outStep, Real margin) {
@@ -181,7 +181,9 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 			// create a new simulation object with only this single model
 			Simulation* tmpSim = new Simulation();
 			tmpSim->init(sim->getParticleRadius(), false);
+			Simulation::setCurrent(tmpSim);
 			tmpSim->addFluidModel(model->getId(), particles.size(), particles.data(), velocities.data(), 0);
+			  // uses current sim internally to add a neighborhoodsearch point_set
 			FluidModel* tmpModel = tmpSim->getFluidModel(0);
 
 			// ensure same method so that we get correct field quantities on new particles
@@ -190,17 +192,11 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 			// sorting would make it harder to find the grid-aligned particles later
 			tmpSim->setValue<bool>(Simulation::ENABLE_Z_SORT, false);
 
-			//TODO neighboorhood search crashes
-			tmpSim->performNeighborhoodSearch();
-			NeighborhoodSearch *neighborhoodSearch = tmpSim->getNeighborhoodSearch();
-			neighborhoodSearch->update_point_sets();
-			neighborhoodSearch->resize_point_set(tmpModel->getPointSetIndex(), &tmpModel->getPosition(0)[0], tmpModel->numberOfParticles());
-
 			// do a time step
 			// - this will internally get the current sim and iterate over all fluid models, which is our tmp sim with single model
 			// - does a computation with current SPH method to resolve pressure and apply forces
 			// - does even an explicit time integration internally, to get velocity from acceleration
-			Simulation::setCurrent(tmpSim);
+			std::cout << "Grid export: Solve field quantities on grid particles..." << std::endl;
 			tmpSim->getTimeStep()->step();
 
 			// get quantities at grid-aligned particles
@@ -213,12 +209,15 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 			writeInviwoVolume<Vector3r, 3>(exportFileName, velocities.data(), 0.0f, 5.0f, gridExportResolution, step);
 
 			// reset, forget
-			Simulation::setCurrent(sim);
 			delete tmpSim;
+			Simulation::setCurrent(sim);
 			// Simulation can now preceed as if nothing happened
 
 			// Alternatively, we could sample the current FluidModel by getting particle neighbors for each grid point, and not seed more particles.
-			//sim->numberOfNeighbors(0,0,0); // WTF is a point_set!?
+			// some examples of how to use the apis:
+			//tmpSim->performNeighborhoodSearch();
+			//NeighborhoodSearch *neighborhoodSearch = tmpSim->getNeighborhoodSearch();
+			//sim->numberOfNeighbors(0,0,0); // pass correct point set
 			//sim->W(Vector3r(0));
 		}
 	}
