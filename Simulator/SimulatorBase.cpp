@@ -463,8 +463,6 @@ void SimulatorBase::runSimulation()
 
 void SimulatorBase::cleanup()
 {
-	exporter.saveParticleSnapshot();
-
 	for (unsigned int i = 0; i < m_scene.boundaryModels.size(); i++)
 		delete m_scene.boundaryModels[i];
 	m_scene.boundaryModels.clear();
