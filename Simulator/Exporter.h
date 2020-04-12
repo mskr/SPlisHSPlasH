@@ -25,6 +25,8 @@ public:
 	static int PARTICLE_EXPORT_ATTRIBUTES; static std::string particleAttributes;
 	static AlignedBox3r gridExportRegion;
 	static Vector3u gridExportResolution;
+	static std::string excludeModels;
+	static std::string modelAttrMapping;
 
 private:
 
@@ -38,7 +40,7 @@ private:
 	static float* reorderLinspace3D(Real* data, Vector3u res);
 
 	template<typename T, unsigned int components>
-	static void writeInviwoVolume(std::string name, const void* data, float min, float max, Vector3u res, Vector3r step, bool zMajor = true);
+	static void writeInviwoVolume(std::string name, const void* data, Vector3u res, Vector3r step, Real min = -1.0, Real max = -1.0, bool zMajor = true);
 
 	bool m_isFirstFrameVTK;
 

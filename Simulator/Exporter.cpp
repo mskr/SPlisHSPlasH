@@ -1,6 +1,8 @@
 #include "Exporter.h"
 
 #include <regex>
+#include <chrono>
+using namespace std::chrono;
 
 #include "extern/partio/src/lib/Partio.h"
 #include "Utilities/PartioReaderWriter.h"
@@ -29,8 +31,11 @@ int Exporter::PARTICLE_EXPORT_ATTRIBUTES = -1;
 Real Exporter::framesPerSecond = 25;
 std::string Exporter::particleAttributes = "velocity";
 
-AlignedBox3r Exporter::gridExportRegion = AlignedBox3r(Vector3r(-1, -1, -1), Vector3r(1, 1, 1));
-Vector3u Exporter::gridExportResolution = Vector3u(10, 10, 10);
+AlignedBox3r Exporter::gridExportRegion = AlignedBox3r(Vector3r(-4.4, -1.2, -1.2), Vector3r(0, 1.2, 1.2));
+Vector3u Exporter::gridExportResolution = Vector3u(70, 50, 50);
+
+std::string Exporter::excludeModels = "";
+std::string Exporter::modelAttrMapping = "Fluid:velocity_magnitude;Wall:density";
 
 // Fill region with regular spaced points
 std::vector<Vector3r> Exporter::linspace3D(AlignedBox3r region, Vector3u resolution, Vector3r* outStep, Real margin) {
@@ -69,7 +74,7 @@ float* Exporter::reorderLinspace3D(Real* data, Vector3u res) {
 
 // Write inviwo volume file format (.dat and .raw pair)
 template<typename T, unsigned int components>
-void Exporter::writeInviwoVolume(std::string name, const void* data, float min, float max, Vector3u res, Vector3r step, bool zMajor) {
+void Exporter::writeInviwoVolume(std::string name, const void* data, Vector3u res, Vector3r step, Real min, Real max, bool zMajor) {
 	std::ofstream datFile(name + ".dat");
 	std::vector<std::string> parts;
 	StringTools::tokenize(name, parts, "/");
@@ -89,7 +94,9 @@ void Exporter::writeInviwoVolume(std::string name, const void* data, float min, 
 	if (components == 2) datFile << "Format: Vec2FLOAT32" << std::endl;
 	if (components == 3) datFile << "Format: Vec3FLOAT32" << std::endl;
 #endif
-	datFile << "DataRange: " << min << " " << max << std::endl;
+
+	if (min != max) // param was omitted and probably meant to tune later in inviwo
+		datFile << "DataRange: " << min << " " << max << std::endl;
 
 	// set basis so that it transforms texture coords to real units
 	if (zMajor) {
@@ -144,10 +151,26 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 	if (inviwo)
 		FileSystem::makeDirs(inviwoExportPath);
 
+	std::vector<std::string> excludeIds;
+	StringTools::tokenize(excludeModels, excludeIds, ";");
+
+	std::map<std::string, std::string> mapping;
+	std::vector<std::string> tmp;
+	StringTools::tokenize(modelAttrMapping, tmp, ";");
+	for (std::string m : tmp) {
+		std::vector<std::string> tmp2;
+		StringTools::tokenize(m, tmp2, ":");
+		if (tmp2.size() != 2) continue;
+		mapping[tmp2[0]] = tmp2[1];
+	}
+
 	Simulation *sim = Simulation::getCurrent();
 	for (unsigned int i = 0; i < sim->numberOfFluidModels(); i++)
 	{
 		FluidModel *model = sim->getFluidModel(i);
+
+		if (std::find(excludeIds.begin(), excludeIds.end(), model->getId()) != excludeIds.end()) continue;
+
 		std::string fileName;
 		if (exportName.empty())
 			fileName = model->getId() + "_" + temporalIdentifier;
@@ -174,6 +197,8 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 			size_t numNewParticles = particles.size();
 			  // make sure that particles in this box are not so close that they generate forces with each other, but only receive forces from existing particles
 			std::vector<Vector3r> velocities(particles.size(), Vector3r(0,0,0));
+			std::vector<Real> velocity_magnitude(particles.size(), 0);
+			std::vector<Real> densities(particles.size(), 1000);
 
 			// merge model and new grid-aligned particles into one array, so that they share the same id <=> same material
 			for (unsigned int i = 0; i < model->numberOfParticles(); i++) {
@@ -194,21 +219,53 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 			// sorting would make it harder to find the grid-aligned particles later
 			tmpSim->setValue<bool>(Simulation::ENABLE_Z_SORT, false);
 
+			time_point<high_resolution_clock> t0 = high_resolution_clock::now();
+
 			// do a time step
 			// - this will internally get the current sim and iterate over all fluid models, which is our tmp sim with single model
 			// - does a computation with current SPH method to resolve pressure and apply forces
 			// - does even an explicit time integration internally, to get velocity from acceleration
-			std::cout << "Grid export: Solve field quantities on grid particles..." << std::endl;
+			std::cout << "Grid export: Solve field quantities on grid particles (" << model->getId() << ")... ";
 			tmpSim->getTimeStep()->step();
+			
+			time_point<high_resolution_clock> t1 = high_resolution_clock::now();
+			std::cout << "Done in " << duration_cast<seconds>(t1 - t0).count() << "s." << std::endl;
 
 			// get quantities at grid-aligned particles
 			  // caution: the particles get sorted in neighborhood search!
 			for (unsigned int i = 0; i < numNewParticles; i++) {
 				velocities[i] = tmpModel->getVelocity(i);
-				// can get density in same way
+				velocity_magnitude[i] = tmpModel->getVelocity(i).norm();
+				densities[i] = tmpModel->getDensity(i);
 			}
 
-			writeInviwoVolume<Vector3r, 3>(exportFileName, velocities.data(), 0.0f, 5.0f, gridExportResolution, step);
+			std::string attr = mapping[model->getId()];
+			if (attr == "velocity_magnitude") {
+
+				std::cout << "Write velocity_magnitude to Inviwo volume." << std::endl;
+
+				writeInviwoVolume<Real, 1>(
+					exportFileName, velocity_magnitude.data(), gridExportResolution, step, 
+					*std::min_element(velocity_magnitude.begin(), velocity_magnitude.end()), *std::max_element(velocity_magnitude.begin(), velocity_magnitude.end()));
+
+			}
+			else if (attr == "density") {
+
+				std::cout << "Write density to Inviwo volume." << std::endl;
+
+				writeInviwoVolume<Real, 1>(
+					exportFileName, densities.data(), gridExportResolution, step, 
+					*std::min_element(densities.begin(), densities.end()), *std::max_element(densities.begin(), densities.end()));
+
+			}
+			else if (attr == "velocity") {
+
+				std::cout << "Write velocity to Inviwo volume." << std::endl;
+
+				writeInviwoVolume<Vector3r, 3>(
+					exportFileName, velocities.data(), gridExportResolution, step);
+
+			}
 
 			// reset, forget
 			delete tmpSim;
