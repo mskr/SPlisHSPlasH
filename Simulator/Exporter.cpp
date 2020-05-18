@@ -56,22 +56,6 @@ std::vector<Vector3r> Exporter::linspace3D(AlignedBox3r region, Vector3u resolut
 	return P;
 }
 
-// Change point layout: z-major to x-major order
-float* Exporter::reorderLinspace3D(Real* data, Vector3u res) {
-	size_t size = res.x() * res.y() * res.z();
-	float* xdata = new float[size];
-	for (unsigned int z = 0; z < res.z(); z++) {
-		for (unsigned int y = 0; y < res.y(); y++) {
-			for (unsigned int x = 0; x < res.x(); x++) {
-				unsigned int i_old = z + y * res.z() + x * res.y() * res.z();
-				unsigned int i_new = x + y * res.x() + z * res.x() * res.y();
-				xdata[i_new] = data[i_old];
-			}
-		}
-	}
-	return xdata;
-}
-
 // Write inviwo volume file format (.dat and .raw pair)
 template<typename T, unsigned int components>
 void Exporter::writeInviwoVolume(std::string name, const void* data, Vector3u res, Vector3r step, Real min, Real max, bool zMajor) {
@@ -245,8 +229,7 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 				std::cout << "Write velocity_magnitude to Inviwo volume." << std::endl;
 
 				writeInviwoVolume<Real, 1>(
-					exportFileName, velocity_magnitude.data(), gridExportResolution, step, 
-					*std::min_element(velocity_magnitude.begin(), velocity_magnitude.end()), *std::max_element(velocity_magnitude.begin(), velocity_magnitude.end()));
+					exportFileName, velocity_magnitude.data(), gridExportResolution, step);
 
 			}
 			else if (attr == "density") {
@@ -254,8 +237,7 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 				std::cout << "Write density to Inviwo volume." << std::endl;
 
 				writeInviwoVolume<Real, 1>(
-					exportFileName, densities.data(), gridExportResolution, step, 
-					*std::min_element(densities.begin(), densities.end()), *std::max_element(densities.begin(), densities.end()));
+					exportFileName, densities.data(), gridExportResolution, step);
 
 			}
 			else if (attr == "velocity") {

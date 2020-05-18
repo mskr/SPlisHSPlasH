@@ -36,8 +36,6 @@ private:
 	//   - Use current SPH method to get the velocity from the pressure solve
 	
 	static std::vector<Vector3r> linspace3D(AlignedBox3r region, Vector3u resolution, Vector3r* outStep = 0, Real margin = 0);
-	
-	static float* reorderLinspace3D(Real* data, Vector3u res);
 
 	template<typename T, unsigned int components>
 	static void writeInviwoVolume(std::string name, const void* data, Vector3u res, Vector3r step, Real min = -1.0, Real max = -1.0, bool zMajor = true);
