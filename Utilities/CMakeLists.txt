@@ -22,6 +22,7 @@ add_library(Utilities
 	SystemInfo.h
 	Timing.h
 	Version.h
+	MotionTable.h
 )
 
 add_dependencies(Utilities partio zlib)

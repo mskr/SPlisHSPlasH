@@ -117,6 +117,11 @@ void SceneLoader::readScene(const char *fileName, Scene &scene)
 				data->mapResolution = Eigen::Matrix<unsigned int, 3, 1>(20, 20, 20);
 				readVector(boundaryModel["mapResolution"], data->mapResolution);
 
+				data->scripted = false;
+				if (readValue<bool>(boundaryModel["isScripted"], data->scripted)) {
+					readValue<std::string>(boundaryModel["motionFile"], data->motionFile);
+				}
+
 
 				scene.boundaryModels.push_back(data);
 			}

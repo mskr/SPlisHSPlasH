@@ -25,6 +25,27 @@ namespace Utilities
 			}
 		}
 
+		static std::string line(std::istream& in) {
+			std::string result;
+			std::getline(in, result);
+			return result;
+		}
+
+		static std::vector<std::string> strings(std::string input = "split on    whitespace   ", char separator = ' ') {
+			std::vector<std::string> result;
+			std::string next = "";
+			for (size_t i = 0; i < input.length(); i++) {
+				if (input[i] != separator) {
+					next += input[i];
+				} else if (!next.empty()) {
+					result.push_back(next);
+					next = "";
+				}
+			}
+			if (!next.empty()) result.push_back(next);
+			return result;
+		}
+
 	};
 }
 

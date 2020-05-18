@@ -183,11 +183,18 @@ void StaticBoundarySimulator::initBoundaryData()
 		rb->setPosition(scene.boundaryModels[i]->translation);
 		rb->setRotation(scene.boundaryModels[i]->rotation);
 
+		BoundaryModel* boundary = nullptr;
+
 		if (sim->getBoundaryHandlingMethod() == BoundaryHandlingMethods::Akinci2012)
 		{
 			BoundaryModel_Akinci2012 *bm = new BoundaryModel_Akinci2012();
 			bm->initModel(rb, static_cast<unsigned int>(boundaryParticles.size()), &boundaryParticles[0]);
 			sim->addBoundaryModel(bm);
+			
+			if (scene.boundaryModels[i]->scripted) {
+				loadMotionFile(scene.boundaryModels[i]->motionFile);
+			}
+			boundary = bm;
 		}
 		else if (sim->getBoundaryHandlingMethod() == BoundaryHandlingMethods::Koschier2017)
 		{
@@ -196,6 +203,7 @@ void StaticBoundarySimulator::initBoundaryData()
 			sim->addBoundaryModel(bm);
 			SPH::TriangleMesh &mesh = rb->getGeometry();
 			m_base->initDensityMap(mesh.getVertices(), mesh.getFaces(), scene.boundaryModels[i], md5, false, bm);
+			boundary = bm;
 		}
 		else if (sim->getBoundaryHandlingMethod() == BoundaryHandlingMethods::Bender2019)
 		{
@@ -204,7 +212,13 @@ void StaticBoundarySimulator::initBoundaryData()
 			sim->addBoundaryModel(bm);
 			SPH::TriangleMesh &mesh = rb->getGeometry();
 			m_base->initVolumeMap(mesh.getVertices(), mesh.getFaces(), scene.boundaryModels[i], md5, false, bm);
+			boundary = bm;
 		}
+
+		if (boundary && scene.boundaryModels[i]->scripted) {
+			boundary->setScriptedMotion(loadMotionFile(scene.boundaryModels[i]->motionFile));
+		}
+
 		if (useCache && !md5)
 			FileSystem::writeMD5File(meshFileName, md5FileName);
 		for (unsigned int j = 0; j < geo.numVertices(); j++)
@@ -222,4 +236,8 @@ void StaticBoundarySimulator::initBoundaryData()
 	// copy the particle data to the GPU
 	sim->getNeighborhoodSearch()->update_point_sets();
 #endif 
+}
+
+void StaticBoundarySimulator::timeStep() {
+	updateBoundaryMotion();
 }

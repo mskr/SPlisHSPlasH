@@ -36,6 +36,7 @@ void PBDBoundarySimulator::init()
 void PBDBoundarySimulator::timeStep()
 {
 	updateBoundaryForces();
+	updateBoundaryMotion();
 
 	//////////////////////////////////////////////////////////////////////////
 	// PBD
@@ -114,6 +115,8 @@ void PBDBoundarySimulator::initBoundaryData()
 		PBD::RigidBodyGeometry &geo = rigidBodies[i]->getGeometry();
 		Utilities::IndexedFaceMesh &mesh = geo.getMesh();
 		PBD::VertexData &vd = geo.getVertexData();
+
+		BoundaryModel* boundary = nullptr;
 
 		if (sim->getBoundaryHandlingMethod() == BoundaryHandlingMethods::Akinci2012)
 		{
@@ -195,6 +198,8 @@ void PBDBoundarySimulator::initBoundaryData()
 			BoundaryModel_Akinci2012 *bm = new BoundaryModel_Akinci2012();
 			bm->initModel(rb, static_cast<unsigned int>(boundaryParticles.size()), &boundaryParticles[0]);
 			sim->addBoundaryModel(bm);
+
+			boundary = bm;
 		}
 		else if (sim->getBoundaryHandlingMethod() == BoundaryHandlingMethods::Koschier2017)
 		{
@@ -212,6 +217,8 @@ void PBDBoundarySimulator::initBoundaryData()
 				xLocal[j] = rigidBodies[i]->getRotationMatrix().transpose() * (vd.getPosition(j) - rigidBodies[i]->getPosition());
 
 			m_base->initDensityMap(xLocal, mesh.getFaces(), scene.boundaryModels[i], md5, true, bm);
+
+			boundary = bm;
 		}
 		else if (sim->getBoundaryHandlingMethod() == BoundaryHandlingMethods::Bender2019)
 		{
@@ -225,9 +232,15 @@ void PBDBoundarySimulator::initBoundaryData()
 			for (unsigned int j = 0; j < vd.size(); j++)
 				xLocal[j] = rb->getRotation().transpose() * (vd.getPosition(j) - rb->getPosition());
 			m_base->initVolumeMap(xLocal, mesh.getFaces(), scene.boundaryModels[i], md5, true, bm);
+
+			boundary = bm;
 		}
 		if (useCache && !md5)
 			FileSystem::writeMD5File(meshFileName, md5FileName);
+
+		if (boundary && scene.boundaryModels[i]->scripted) {
+			boundary->setScriptedMotion(loadMotionFile(scene.boundaryModels[i]->motionFile));
+		}
 	}
 
 	Simulation::getCurrent()->performNeighborhoodSearchSort();

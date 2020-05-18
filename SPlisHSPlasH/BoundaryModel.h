@@ -7,6 +7,7 @@
 #include "RigidBodyObject.h"
 #include "SPHKernels.h"
 #include "Utilities/BinaryFileReaderWriter.h"
+#include "Utilities/MotionTable.h"
 
 namespace SPH 
 {	
@@ -25,7 +26,26 @@ namespace SPH
 			std::vector<Vector3r> m_forcePerThread;
 			std::vector<Vector3r> m_torquePerThread;
 
+			bool m_isScripted;
+			MotionTable m_motionTable;
+
 		public:
+
+			void setScriptedMotion(MotionTable& motionTable) {
+				m_isScripted = true;
+				m_motionTable = motionTable;
+			}
+
+			bool isScripted() const { return m_isScripted; }
+
+			Vector3r getMotion(Real t) {
+				return {
+					m_motionTable.sample(t, "x"),
+					m_motionTable.sample(t, "y"),
+					m_motionTable.sample(t, "z")
+				};
+			}
+
 			virtual void reset();
 
 			virtual void performNeighborhoodSearchSort() {};

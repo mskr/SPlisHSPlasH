@@ -44,6 +44,9 @@ namespace Utilities
 			Real mapThickness;	
 			Eigen::Matrix<unsigned int, 3, 1, Eigen::DontAlign> mapResolution;
 			unsigned int samplingMode;
+			
+			bool scripted;
+			std::string motionFile;
 		};
 
 		/** \brief Struct to store a fluid object */
