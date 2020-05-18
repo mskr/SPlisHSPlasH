@@ -43,11 +43,13 @@ There is the concept of scenes instead of cases.
 For setup, you can sample cubes, spheres or arbitrary meshes with particles.
 Rigid bodies can participate and there is collision detection.
 
-There are no turbulence models.
-At least nothing based on Reynolds decomposition (yet?).
+There are no turbulence models, aka. turbulence is always on.
+There is no laminar-only default option, as in engineering software.
+There is nothing based on Reynolds decomposition (yet?).
 Since no simplification like the Reynolds average is used, everything can be considered a large eddy simulation.
 
 Instead of turbulence, the concept of vorticity is used.
+Vorticity is a special case of turbulence, that can be quantified and controlled (?).
 
 Fluids can represent elastic bodies.
 The constitutive material model is Linear Elasticity (Young's modulus, Poisson's ratio).
@@ -65,5 +67,6 @@ The constitutive material model is Linear Elasticity (Young's modulus, Poisson's
   - Make it easy to avoid overlaps
   - Python could be nice for this
     - Binding exists: /doc/pysplash/creating_scenes.md
-    - manim is nice for text and lines
+    - manim is nice for text and lines, and animations of course *.*
     - blender can import partio
+    - Qt may have what else we need, and can be easily integrated: https://build-system.fman.io/
