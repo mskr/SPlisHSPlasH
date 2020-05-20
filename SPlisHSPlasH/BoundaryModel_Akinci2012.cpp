@@ -34,7 +34,7 @@ void BoundaryModel_Akinci2012::reset()
 
 	// Note:
 	// positions and velocities are already updated by updateBoundaryParticles
-	if (!m_rigidBody->isDynamic())
+	if (!m_rigidBody->isDynamic() && !m_rigidBody->isScripted())
 	{
 		// reset velocities and accelerations
 		for (int j = 0; j < (int)numberOfParticles(); j++)
@@ -103,7 +103,7 @@ void BoundaryModel_Akinci2012::initModel(RigidBodyObject *rbo, const unsigned in
 	m_rigidBody = rbo;
 
 	NeighborhoodSearch *neighborhoodSearch = Simulation::getCurrent()->getNeighborhoodSearch();
-	m_pointSetIndex = neighborhoodSearch->add_point_set(&m_x[0][0], m_x.size(), m_rigidBody->isDynamic(), false, true, this);
+	m_pointSetIndex = neighborhoodSearch->add_point_set(&m_x[0][0], m_x.size(), m_rigidBody->isDynamic() || m_rigidBody->isScripted(), false, true, this);
 }
 
 void BoundaryModel_Akinci2012::performNeighborhoodSearchSort()
@@ -111,7 +111,8 @@ void BoundaryModel_Akinci2012::performNeighborhoodSearchSort()
 	const unsigned int numPart = numberOfParticles();
 
 	// sort static boundaries only once
-	if ((numPart == 0) || (!m_rigidBody->isDynamic() && m_sorted))
+	const auto isStatic = !m_rigidBody->isDynamic() && !m_rigidBody->isScripted();
+	if ((numPart == 0) || (isStatic && m_sorted))
 		return;
 
 	NeighborhoodSearch *neighborhoodSearch = Simulation::getCurrent()->getNeighborhoodSearch();

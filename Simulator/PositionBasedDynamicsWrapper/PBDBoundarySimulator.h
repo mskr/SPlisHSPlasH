@@ -23,6 +23,13 @@ namespace SPH
 		virtual void reset();
 
 		PBDWrapper *getPBDWrapper() { return m_pbdWrapper; }
+
+		///////////////////////////////////////////////
+		// ScriptedMotion: no actual dynamics, but also not static.
+		// Please move to own simulator file.
+		///////////////////////////////////////////////
+
+		bool updateScriptedMotion();
 	};
 }
  

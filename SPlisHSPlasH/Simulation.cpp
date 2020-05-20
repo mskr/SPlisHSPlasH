@@ -413,7 +413,7 @@ void Simulation::updateTimeStepSizeCFL()
 		for (unsigned int i = 0; i < numberOfBoundaryModels(); i++)
 		{
 			BoundaryModel_Akinci2012 *bm = static_cast<BoundaryModel_Akinci2012*>(getBoundaryModel(i));
-			if (bm->getRigidBodyObject()->isDynamic())
+			if (bm->getRigidBodyObject()->isDynamic() || bm->getRigidBodyObject()->isScripted())
 			{
 				for (unsigned int j = 0; j < bm->numberOfParticles(); j++)
 				{
@@ -430,7 +430,7 @@ void Simulation::updateTimeStepSizeCFL()
 		for (unsigned int boundaryModelIndex = 0; boundaryModelIndex < numberOfBoundaryModels(); boundaryModelIndex++)
 		{
 			BoundaryModel_Koschier2017 *bm = static_cast<BoundaryModel_Koschier2017*>(getBoundaryModel(boundaryModelIndex));
-			if (bm->getRigidBodyObject()->isDynamic())
+			if (bm->getRigidBodyObject()->isDynamic() || bm->getRigidBodyObject()->isScripted())
 			{
 				maxVel = std::max(maxVel, bm->getMaxVel());
 			}
@@ -441,7 +441,7 @@ void Simulation::updateTimeStepSizeCFL()
 		for (unsigned int boundaryModelIndex = 0; boundaryModelIndex < numberOfBoundaryModels(); boundaryModelIndex++)
 		{
 			BoundaryModel_Bender2019 *bm = static_cast<BoundaryModel_Bender2019*>(getBoundaryModel(boundaryModelIndex));
-			if (bm->getRigidBodyObject()->isDynamic())
+			if (bm->getRigidBodyObject()->isDynamic() || bm->getRigidBodyObject()->isScripted())
 			{
 				maxVel = std::max(maxVel, bm->getMaxVel());
 			}
@@ -647,7 +647,8 @@ void Simulation::updateBoundaryVolume()
 	m_neighborhoodSearch->set_active(false);
 	for (unsigned int i = 0; i < numberOfBoundaryModels(); i++)
 	{
-		if (!getBoundaryModel(i)->getRigidBodyObject()->isDynamic())
+		const auto bm = getBoundaryModel(i);
+		if (!bm->getRigidBodyObject()->isDynamic() && !bm->getRigidBodyObject()->isScripted())
 			m_neighborhoodSearch->set_active(i + nFluids, true, true);
 	}
 
@@ -657,7 +658,8 @@ void Simulation::updateBoundaryVolume()
 	// Boundary objects
 	for (unsigned int body = 0; body < numberOfBoundaryModels(); body++)
 	{
-		if (!getBoundaryModel(body)->getRigidBodyObject()->isDynamic())
+		const auto bm = getBoundaryModel(body);
+		if (!bm->getRigidBodyObject()->isDynamic() && !bm->getRigidBodyObject()->isScripted())
 			static_cast<BoundaryModel_Akinci2012*>(getBoundaryModel(body))->computeBoundaryVolume();
 	}
 
@@ -670,7 +672,8 @@ void Simulation::updateBoundaryVolume()
 		m_neighborhoodSearch->set_active(false);
 
 		// Only activate next dynamic body
-		if (getBoundaryModel(body)->getRigidBodyObject()->isDynamic())
+		const auto bm = getBoundaryModel(body);
+		if (bm->getRigidBodyObject()->isDynamic() || bm->getRigidBodyObject()->isScripted())
 		{
 			m_neighborhoodSearch->set_active(body + nFluids, true, true);
 			m_neighborhoodSearch->find_neighbors();

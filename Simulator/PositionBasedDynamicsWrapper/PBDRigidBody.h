@@ -6,15 +6,29 @@
 #include "Simulation/RigidBody.h"
 #include "SPlisHSPlasH/TimeManager.h"
 
+#include "Utilities/MotionTable.h"
+
 namespace SPH 
 {	
 	class PBDRigidBody : public RigidBodyObject 
 	{
 	protected: 
-		PBD::RigidBody *m_rigidBody;	
+		PBD::RigidBody *m_rigidBody;
+
+		///////////////////////////////////////////////
+		// ScriptedMotion: no actual dynamics, but also not static.
+		// Please move to own rigid body file.
+		///////////////////////////////////////////////
+
+		bool m_isScripted;
+		MotionTable m_motionTable;
+		Vector3r m_initialPosition;
 
 	public:
-		PBDRigidBody(PBD::RigidBody *rigidBody) : m_rigidBody(rigidBody) {}
+		PBDRigidBody(PBD::RigidBody *rigidBody) :
+			m_rigidBody(rigidBody),
+			m_isScripted(false),
+			m_initialPosition(rigidBody->getPosition()) {}
 
 		virtual bool isDynamic() const { return m_rigidBody->getMass() != 0.0; }
 
@@ -67,6 +81,31 @@ namespace SPH
 		virtual const std::vector<Vector3r> &getVertices() const { return *m_rigidBody->getGeometry().getVertexData().getVertices(); };
 		virtual const std::vector<Vector3r> &getVertexNormals() const { return m_rigidBody->getGeometry().getMesh().getVertexNormals(); };
 		virtual const std::vector<unsigned int> &getFaces() const { return m_rigidBody->getGeometry().getMesh().getFaces(); };
+
+		///////////////////////////////////////////////
+		// ScriptedMotion: no actual dynamics, but also not static.
+		// Please move to own rigid body file.
+		///////////////////////////////////////////////
+
+		void setScriptedMotion(MotionTable& motionTable) {
+			m_isScripted = true;
+			m_motionTable = motionTable;
+		}
+
+		bool isScripted() const { return m_isScripted; }
+
+		void updateScriptedMotion() {
+			Real t = TimeManager::getCurrent()->getTime();
+			Real h = TimeManager::getCurrent()->getTimeStepSize();
+			const Vector3r newPos = {
+				m_motionTable.sample(t, "x"),
+				m_motionTable.sample(t, "y"),
+				m_motionTable.sample(t, "z")
+			};
+			const auto vel = (newPos - getPosition()) / h;
+			setVelocity({ vel.x(), vel.y(), vel.z() });
+			setPosition(m_initialPosition + newPos);
+		}
 	};
 }
 

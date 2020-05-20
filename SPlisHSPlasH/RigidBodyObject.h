@@ -32,6 +32,9 @@ namespace SPH
 		virtual const std::vector<Vector3r> &getVertices() const = 0;
 		virtual const std::vector<Vector3r> &getVertexNormals() const = 0;
 		virtual const std::vector<unsigned int> &getFaces() const = 0;
+
+		virtual bool isScripted() const = 0;
+		virtual void updateScriptedMotion() = 0;
 	};
 }
 

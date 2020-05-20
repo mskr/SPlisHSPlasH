@@ -2,7 +2,6 @@
 #define __BoundarySimulator_h__
 
 #include "SPlisHSPlasH/Common.h"
-#include "Utilities/MotionTable.h"
 
 namespace SPH
 {
@@ -17,10 +16,6 @@ namespace SPH
 		virtual void reset() {}
 
 		void updateBoundaryForces();
-
-		void updateBoundaryMotion();
-
-		MotionTable loadMotionFile(std::string path);
 	};
 }
  

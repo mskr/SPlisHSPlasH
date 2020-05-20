@@ -1,63 +1,53 @@
 {
+	"Configuration": {
+		"pause": false,
+		"cameraPosition": [ 0, 0, 0.4 ],
+		"gravitation": [ 0, 0, 0 ],
+		"simulationMethod": 4,
+		"particleRadius": 0.001,
+		"timeStepSize": 0.1,
+		"cflMethod": 1,
+		"boundaryHandlingMethod": 2,
+		"numberOfStepsPerRenderUpdate": 1
+	},
+	"Materials": [
+		{
+			"id": "Fluid",
+			"density0": 1000
+		}
+	],
 	"RigidBodies": [
 		{
 			"geometryFile": "../../models/Chamber/Top.obj",
-
-			"isWall": false,
+			"scale": [ 0.001, 0.001, 0.001 ],
 			"isDynamic": false,
-			"isScripted":  true,
+			"isScripted": true,
 			"motionFile": "C:/Users/Marius/Desktop/ChamberAndValveWithWall/motion.ttab"
+		},
+		{
+			"geometryFile": "../../models/UnitBox.obj",
+			"scale": [ 0.1, 0.1, 0.1 ],
+			"isDynamic": false,
+			"isWall": true,
+			"mapInvert": true
 		}
 	],
 	"FluidModels": [
 		{
 			"id": "Fluid",
-			"particleFile": "../../models/Chamber/Fluid.bgeo"
-		}
-	],
-	"Materials": [
-		{
-			"id": "Fluid",
-			"colorField": "velocity",
-			"colorMapType": 0,
-
-			"density0": 1000,
-
-			"maxEmitterParticles": 1000,
-			"emitterReuseParticles": true,
-			"emitterBoxMin": [ -40, -20, -20 ],
-			"emitterBoxMax": [ 40, 20, 20 ]
+			"particleFile": "../../models/Chamber/Fluid.obj",
+			"scale": [ 0.001, 0.001, 0.001 ]
 		}
 	],
 
 
 
 
-	"Configuration": {
-		"simulationMethod": 4,
-		"boundaryHandlingMethod": 2,
 
-		"gravitation": [ 0, 0, 0 ],
-		"particleRadius": 0.025,
 
-		"timeStepSize": 0.005,
-		"numberOfStepsPerRenderUpdate": 4,
-		"cflMethod": 1,
-		"cflFactor": 1,
-		"cflMaxTimeStepSize": 0.005,
-		"maxIterations": 100,
-		"maxError": 0.05,
 
-		"stiffness": 50000,
-		"exponent": 7,
-		"velocityUpdateMethod": 0,
-		"enableDivergenceSolver": true,
-		"maxIterationsV": 100,
-		"maxErrorV": 0.1,
 
-		"pause": false,
-		"pauseAt": 0.01
-	},
+
 	"Comments": {
 		"Configuration": {
 			"simulationMethod": {
@@ -73,6 +63,11 @@
 				"1": "density maps (Koschier et al. 2017)",
 				"2": "volume maps (Bender et al. 2019)"
 			},
+			"cflMethod": {
+				"0": "No adaptive time stepping",
+				"1": "Use CFL condition",
+				"2": "Use CFL condition and consider number of pressure solver iterations"
+			},
 			"stiffness": "Used by WCSPH and PF",
 			"exponent": "Used by WCSPH",
 			"velocityUpdateMethod": {
@@ -81,7 +76,12 @@
 			},
 			"enableDivergenceSolver": "Used by DFSPH"
 		},
-		"Fluid": {
+		"Materials": {
+			"colorMapType": {
+				"0": "None",
+				"1": "Jet",
+				"2": "Plasma"
+			},
 			"surfaceTension": 0.2,
 			"surfaceTensionMethod": {
 				"0": "None",

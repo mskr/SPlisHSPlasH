@@ -20,8 +20,6 @@ namespace SPH
 		virtual ~StaticBoundarySimulator();
 
 		virtual void initBoundaryData();
-		
-		virtual void timeStep();
 	};
 }
  

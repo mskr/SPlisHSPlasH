@@ -53,7 +53,6 @@ SimulatorBase::SimulatorBase()
 
 	m_boundarySimulator = nullptr;
 	m_gui = nullptr;
-	m_isStaticScene = true;
 	m_numberOfStepsPerRenderUpdate = 4;
 	m_sceneFile = "";
 	m_renderWalls = 4;
@@ -329,25 +328,7 @@ void SimulatorBase::init(int argc, char **argv, const std::string &windowName)
 	//////////////////////////////////////////////////////////////////////////
 	// init boundary simulation
 	//////////////////////////////////////////////////////////////////////////
-	m_isStaticScene = true;
-	for (unsigned int i = 0; i < m_scene.boundaryModels.size(); i++)
-	{
-		if (m_scene.boundaryModels[i]->dynamic)
-		{
-			m_isStaticScene = false;
-			break;
-		}
-	}
-	if (m_isStaticScene)
-	{
-		LOG_INFO << "Initialize static boundary simulation";
-		m_boundarySimulator = new StaticBoundarySimulator(this);
-	}
-	else
-	{
-		LOG_INFO << "Initialize dynamic boundary simulation";
-		m_boundarySimulator = new PBDBoundarySimulator(this);
-	}
+	m_boundarySimulator = new PBDBoundarySimulator(this);
 }
 
 void SimulatorBase::initSimulation()
@@ -1239,7 +1220,7 @@ void SimulatorBase::updateBoundaryParticles(const bool forceUpdate = false)
 	{
 		BoundaryModel_Akinci2012 *bm = static_cast<BoundaryModel_Akinci2012*>(sim->getBoundaryModel(i));
 		RigidBodyObject *rbo = bm->getRigidBodyObject();
-		if (rbo->isDynamic() || forceUpdate)
+		if (rbo->isDynamic() || forceUpdate || rbo->isScripted())
 		{
 #pragma omp parallel default(shared)
 			{
@@ -1247,7 +1228,7 @@ void SimulatorBase::updateBoundaryParticles(const bool forceUpdate = false)
 				for (int j = 0; j < (int)bm->numberOfParticles(); j++)
 				{
 					bm->getPosition(j) = rbo->getRotation() * bm->getPosition0(j) + rbo->getPosition();
-					if (rbo->isDynamic())
+					if (rbo->isDynamic() || rbo->isScripted())
 						bm->getVelocity(j) = rbo->getAngularVelocity().cross(bm->getPosition(j) - rbo->getPosition()) + rbo->getVelocity();
 					else
 						bm->getVelocity(j).setZero();
@@ -1271,7 +1252,7 @@ void SPH::SimulatorBase::updateDMVelocity()
 	{
 		BoundaryModel_Koschier2017 *bm = static_cast<BoundaryModel_Koschier2017*>(sim->getBoundaryModel(i));
 		RigidBodyObject *rbo = bm->getRigidBodyObject();
-		if (rbo->isDynamic())
+		if (rbo->isDynamic() || rbo->isScripted())
 		{
 			const Real maxDist = bm->getMaxDist();
 			const Vector3r x(maxDist, 0.0, 0.0);
@@ -1290,7 +1271,7 @@ void SPH::SimulatorBase::updateVMVelocity()
 	{
 		BoundaryModel_Bender2019 *bm = static_cast<BoundaryModel_Bender2019*>(sim->getBoundaryModel(i));
 		RigidBodyObject *rbo = bm->getRigidBodyObject();
-		if (rbo->isDynamic())
+		if (rbo->isDynamic() || rbo->isScripted())
 		{
 			const Real maxDist = bm->getMaxDist();
 			const Vector3r x(maxDist, 0.0, 0.0);

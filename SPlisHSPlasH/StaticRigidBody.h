@@ -46,6 +46,9 @@ namespace SPH
 		void setWorldSpacePosition(const Vector3r &x) { m_x_world = x; }
 		void setWorldSpaceRotation(const Matrix3r &r) { m_R_world = r; }
 		TriangleMesh& getGeometry() { return m_geometry; }
+
+		bool isScripted() const { return false; }
+		void updateScriptedMotion() {}
 	};
 }
 
