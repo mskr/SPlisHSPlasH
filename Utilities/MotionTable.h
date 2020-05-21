@@ -16,7 +16,7 @@ struct MotionTable {
 
 	MotionTable() : name("empty"), numQuantities(0), numSamples(0), periodic(false) {}
 
-	MotionTable(std::string path) {
+	MotionTable(std::string path, Real scale = 1.0) {
 		std::ifstream file(path);
 		using namespace Utilities;
 		const auto header = StringTools::line(file);
@@ -38,7 +38,7 @@ struct MotionTable {
 				exit(1);
 			}
 			for (int i = 0; i < this->numQuantities; i++) {
-				this->data[quantities[i]].push_back(atof(samples[i].c_str()));
+				this->data[quantities[i]].push_back(atof(samples[i].c_str()) * scale);
 			}
 			sampleCount++;
 		}

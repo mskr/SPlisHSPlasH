@@ -96,13 +96,13 @@ namespace SPH
 
 		void updateScriptedMotion() {
 			Real t = TimeManager::getCurrent()->getTime();
-			Real h = TimeManager::getCurrent()->getTimeStepSize();
+			Real dt = TimeManager::getCurrent()->getTimeStepSize();
 			const Vector3r newPos = {
 				m_motionTable.sample(t, "x"),
 				m_motionTable.sample(t, "y"),
 				m_motionTable.sample(t, "z")
 			};
-			const auto vel = (newPos - getPosition()) / h;
+			const auto vel = (newPos - getPosition()) / dt;
 			setVelocity({ vel.x(), vel.y(), vel.z() });
 			setPosition(m_initialPosition + newPos);
 		}

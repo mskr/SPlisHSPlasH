@@ -121,6 +121,8 @@ void SceneLoader::readScene(const char *fileName, Scene &scene)
 				if (readValue<bool>(boundaryModel["isScripted"], data->scripted)) {
 					readValue<std::string>(boundaryModel["motionFile"], data->motionFile);
 				}
+				data->motionScale = 1.0;
+				readValue<Real>(boundaryModel["motionScale"], data->motionScale);
 
 
 				scene.boundaryModels.push_back(data);

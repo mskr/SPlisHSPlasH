@@ -47,6 +47,7 @@ namespace Utilities
 			
 			bool scripted;
 			std::string motionFile;
+			Real motionScale;
 		};
 
 		/** \brief Struct to store a fluid object */

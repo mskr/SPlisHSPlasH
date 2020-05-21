@@ -233,7 +233,7 @@ void PBDBoundarySimulator::initBoundaryData()
 			FileSystem::writeMD5File(meshFileName, md5FileName);
 
 		if (scene.boundaryModels[i]->scripted) {
-			rb->setScriptedMotion(MotionTable(scene.boundaryModels[i]->motionFile));
+			rb->setScriptedMotion(MotionTable(scene.boundaryModels[i]->motionFile, scene.boundaryModels[i]->motionScale));
 		}
 	}
 

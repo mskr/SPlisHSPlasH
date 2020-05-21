@@ -1,18 +1,14 @@
 {
-	"Preface": "Units times 10. Particle radius and scales.",
+	"Issue": "Particle radius 0.001 (1 millimeter) causes particles to bounce with highspeed and behave chaotic. With 0.01 (10 millimeters) the jumping is completely gone and it behaves like liquid again.",
 
 	"Configuration": {
 		"pause": false,
-		"stopAt": 1.4,
-		"enablePartioExport": true,
-		"enableRigidBodyExport": true,
-
-		"cameraPosition": [ 4, 1, 4 ],
-		"gravitation": [ 0, 0, 0 ],
+		"cameraPosition": [ 0.4, 0.1, 0.4 ],
+		"gravitation": [ 0, -9.81, 0 ],
 		"simulationMethod": 4,
-		"particleRadius": 0.01,
+		"particleRadius": 0.001,
 
-		"timeStepSize": 0.001,
+		"timeStepSize": 0.005,
 		"cflMethod": 1,
 		"cflFactor": 1,
 		"cflMaxTimeStepSize": 0.005,
@@ -34,26 +30,18 @@
 	],
 	"RigidBodies": [
 		{
-			"geometryFile": "../../models/Chamber/Top.obj",
-			"scale": [ 0.01, 0.01, 0.01 ],
-			"isDynamic": false,
-			"isScripted": true,
-			"motionFile": "C:/Users/Marius/Desktop/ChamberAndValveWithWall/motion.ttab",
-			"motionScale": 10
-		},
-		{
-			"geometryFile": "../../models/Chamber/Walls.obj",
-			"scale": [ 0.01, 0.01, 0.01 ],
-			"color": [ 0.6, 0.4, 0.4, 1.0 ],
-			"isDynamic": false,
-			"isWall": false
+			"geometryFile": "../../models/UnitBox.obj",
+			"scale": [ 1, 0.01, 1 ],
+			"color": [ 0.1, 0.4, 0.2, 1.0 ],
+			"isDynamic": false
 		}
 	],
 	"FluidModels": [
 		{
 			"id": "Fluid",
-			"particleFile": "../../models/Chamber/Fluid.obj",
-			"scale": [ 0.009, 0.009, 0.009 ]
+			"particleFile": "../../models/UnitBox.obj",
+			"scale": [ 0.01, 0.01, 0.01 ],
+			"translation": [ 0, 0.04, 0 ]
 		}
 	],
 
