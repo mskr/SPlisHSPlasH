@@ -220,7 +220,7 @@ Example code:
   - 0: box
   - 1: circle
 * width (int): Width of the box or radius of the circle emitter (default: 5).
-* height (int): Height of the box (is only used for type 0) (default: 5).
+* height (int): Height of the box (is only used for type 0) (default: 5). Note that width and height are integers and one unit is the particle diameter (particleRadius times two). Furthermore a margin depending on boundary handling method is added (particle based boundaries: 4r, map based boundaries: 5r).
 * translation (vec3): Translation vector of the emitter (default: [0,0,0]).
 * rotationAxis (vec3): Axis used to rotate the emitter. Note that in 2D simulations the axis is always set to [0,0,1] (default: [0,0,1]).
 * rotationAngle (float): Rotation angle for the initial rotation of the emitter (default: 0). 
@@ -371,7 +371,7 @@ Example code:
 
 ##### Emitters
 
-* maxEmitterParticles (int): Maximum number of particles the emitter generates. Note that reused particles (see below) are not counted here.
+* maxEmitterParticles (int): Maximum number of particles the emitter generates. Note that reused particles (see below) are not counted here. Default is 10000.
 * emitterReuseParticles (bool):  Reuse particles if they are outside of the bounding box defined by emitterBoxMin, emitterBoxMax
 * emitterBoxMin (vec3): Minimum coordinates of an axis-aligned box (used in combination with emitterReuseParticles)
 * emitterBoxMax (vec3): Maximum coordinates of an axis-aligned box (used in combination with emitterReuseParticles)
