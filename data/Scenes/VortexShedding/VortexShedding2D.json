@@ -1,0 +1,93 @@
+{
+	"Configuration": {
+		"sim2D": true,
+		"gravitation": [ 0, 0, 0 ],
+		"cameraPosition": [ 0, 0, 40 ],
+		"numberOfStepsPerRenderUpdate": 4,
+
+		"simulationMethod": 4,
+
+		"particleRadius": 0.05,
+		"timeStepSize": 0.01,
+		"cflMethod": 2,
+		"cflFactor": 1,
+		"cflMaxTimeStepSize": 0.005,
+		"maxIterations": 100,
+		"maxError": 0.05,
+		"maxIterationsV": 100,
+		"maxErrorV": 0.1,
+		"stiffness": 50000,
+		"exponent": 7,
+		"velocityUpdateMethod": 0,
+		"enableDivergenceSolver": true,
+		"boundaryHandlingMethod": 2,
+		"pause": false
+	},
+	"Materials": [
+		{
+			"id": "Fluid",
+			"maxEmitterParticles": 38800,
+			"comment": "number of particles = 20 * height_emitter / r",
+			"emitterReuseParticles": true,
+			"emitterBoxMin": [ -10, -5, -1 ],
+			"emitterBoxMax": [ 10, 5, 1 ],
+			"density0": 1,
+			"viscosity": 0.01,
+
+			"viscosityMethod": 7,
+
+			"dragMethod": 2,
+			"drag": 10.0,
+
+			"colorMapType": 2,
+			"renderMinValue": 0.0,
+			"renderMaxValue": 2.0
+		}
+	],
+	"Emitters": [
+		{
+			"width": 1,
+			"height": 97,
+			"comment": "height in particles = (h - 5r)/2r",
+			"translation": [ -10, 0, 0 ],
+			"velocity": 1,
+			"type": 0
+		}
+	],
+	"RigidBodies": [
+		{
+			"geometryFile": "../../../../models/UnitBox.obj",
+			"scale": [ 20, 1, 1 ],
+			"translation": [ 0, 5.5, 0 ],
+			"color": [ 0.1, 0.4, 0.6, 1.0 ],
+			"isDynamic": false,
+			"isWall": false,
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 40, 2, 2 ]
+		},
+		{
+			"geometryFile": "../../../../models/UnitBox.obj",
+			"scale": [ 20, 1, 1 ],
+			"translation": [ 0, -5.5, 0 ],
+			"color": [ 0.1, 0.4, 0.6, 1.0 ],
+			"isDynamic": false,
+			"isWall": false,
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 40, 2, 2 ]
+		},
+		{
+			"geometryFile": "C:/Users/Marius/Desktop/VortexShedding/cylinder.obj",
+			"color": [ 0.1, 0.4, 0.6, 1.0 ],
+			"isDynamic": false,
+			"isWall": false,
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 10, 10, 50 ]
+		}
+	]
+}
+
+
+
