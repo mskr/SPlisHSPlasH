@@ -1,0 +1,77 @@
+{
+	"Issue": "Emitter width/height given in units of particle diameter plus margin => Real height = (2h + 5) * r. Emitting rate can be slower than the rate at which particles leave bounding box => Seeing inactive particles outside.",
+
+	"Configuration": {
+		"pause": false,
+		"timeStepSize": 0.001,
+		"sim2D": true,
+		"numberOfStepsPerRenderUpdate": 4,
+		"particleRadius": 0.02,
+		"simulationMethod": 4,
+		"gravitation": [ 0, 0, 0 ],
+		"cflMethod": 2,
+		"cflFactor": 1,
+		"cflMaxTimeStepSize": 0.005,
+		"maxIterations": 100,
+		"maxError": 0.05,
+		"maxIterationsV": 100,
+		"maxErrorV": 0.1,
+		"stiffness": 50000,
+		"exponent": 7,
+		"velocityUpdateMethod": 0,
+		"enableDivergenceSolver": true,
+		"boundaryHandlingMethod": 2,
+		"cameraPosition": [ 0, 0, 5 ]
+	},
+	"Materials": [
+		{
+			"id": "Fluid",
+			"maxEmitterParticles": 500,
+			"emitterReuseParticles": true,
+			"emitterBoxMin": [ -1, -0.2, -2 ],
+			"emitterBoxMax": [ 1, 0.2, 2 ],
+			"density0": 1,
+			"viscosityMethod": 1,
+			"viscosity": 0.01,
+			"dragMethod": 2,
+			"drag": 10.0,
+			"colorMapType": 1
+		}
+	],
+	"Emitters": [
+		{
+			"width": 1,
+			"height": 5,
+			"translation": [ -1, 0, 0 ],
+			"velocity": 1,
+			"type": 0
+		}
+	],
+	"RigidBodies": [
+		{
+			"geometryFile": "../../../../models/UnitBox.obj",
+			"scale": [ 2, 0.2, 1 ],
+			"translation": [ 0, 0.25, 0 ],
+			"color": [ 0.1, 0.4, 0.6, 1.0 ],
+			"isDynamic": false,
+			"isWall": false,
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 10, 10, 50 ]
+		},
+		{
+			"geometryFile": "../../../../models/UnitBox.obj",
+			"scale": [ 2, 0.2, 1 ],
+			"translation": [ 0, -0.25, 0 ],
+			"color": [ 0.1, 0.4, 0.6, 1.0 ],
+			"isDynamic": false,
+			"isWall": false,
+			"mapInvert": false,
+			"mapThickness": 0.0,
+			"mapResolution": [ 10, 10, 50 ]
+		}
+	]
+}
+
+
+
