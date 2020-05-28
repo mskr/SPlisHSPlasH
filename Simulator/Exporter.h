@@ -50,7 +50,7 @@ public:
 	~Exporter();
 
 	void particleExport(std::string exportName = "", std::string temporalIdentifier = "", std::string folder = "",
-		bool partio = enablePartioExport, bool vtk = enableVTKExport, bool inviwo = false);
+		bool partio = enablePartioExport, bool vtk = enableVTKExport, bool ascii = false, bool inviwo = false);
 	void writeParticlesPartio(const std::string& fileName, SPH::FluidModel* model);
 	void writeParticlesVTK(const std::string& fileName, SPH::FluidModel* model);
 
@@ -67,7 +67,7 @@ public:
 	}
 
 	void saveParticleSnapshot() {
-		particleExport("", std::to_string(SPH::TimeManager::getCurrent()->getTime()), "snapshots", true, false, true);
+		particleExport("", std::to_string(SPH::TimeManager::getCurrent()->getTime()), "snapshots", false, false, true, false);
 	}
 
 	void reset() {

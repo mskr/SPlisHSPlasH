@@ -123,15 +123,18 @@ void Exporter::rigidBodyExport(std::string scenePath, std::string temporalIdenti
 	}
 }
 
-void Exporter::particleExport(std::string exportName, std::string temporalIdentifier, std::string folder, bool partio, bool vtk, bool inviwo)
+void Exporter::particleExport(std::string exportName, std::string temporalIdentifier, std::string folder, bool partio, bool vtk, bool ascii, bool inviwo)
 {
 	std::string partioExportPath = FileSystem::normalizePath(m_outputPath + "/" + folder + "/partio");
 	std::string vtkExportPath = FileSystem::normalizePath(m_outputPath + "/" + folder + "/vtk");
+	std::string asciiExportPath = FileSystem::normalizePath(m_outputPath + "/" + folder + "/ascii");
 	std::string inviwoExportPath = FileSystem::normalizePath(m_outputPath + "/" + folder + "/inviwo");
 	if (partio)
 		FileSystem::makeDirs(partioExportPath);
 	if (vtk)
 		FileSystem::makeDirs(vtkExportPath);
+	if (ascii)
+		FileSystem::makeDir(asciiExportPath);
 	if (inviwo)
 		FileSystem::makeDirs(inviwoExportPath);
 
@@ -260,6 +263,80 @@ void Exporter::particleExport(std::string exportName, std::string temporalIdenti
 			//NeighborhoodSearch *neighborhoodSearch = tmpSim->getNeighborhoodSearch();
 			//sim->numberOfNeighbors(0,0,0); // pass correct point set
 			//sim->W(Vector3r(0));
+		}
+		
+		if (ascii) {
+			
+			std::string exportFileName = FileSystem::normalizePath(asciiExportPath + "/" + fileName);
+
+			std::ofstream file(exportFileName);
+
+			const auto sim2D = Simulation::getCurrent()->is2DSimulation();
+
+			file << "particleid x-coordinate y-coordinate";
+			if (!sim2D) file << " z-coordinate";
+			
+			std::vector<std::string> attributes;
+			StringTools::tokenize(particleAttributes, attributes, ";");
+
+			for (const auto attr : attributes) {
+				file << " " << attr;
+			}
+
+			file << std::endl;
+			
+			const unsigned int numParticles = model->numActiveParticles();
+
+			printf("ascii export for %s\n", model->getId());
+
+			for (unsigned int i = 0; i < numParticles; i++)
+			{
+				if (i % (numParticles / 100) == 0) printf("\r%d%%    ", i / (numParticles / 100));
+
+				const auto id = model->getParticleId(i);
+				const Vector3r& x = model->getPosition(i);
+
+				file << id << " " << x[0] << " " << x[1];
+				if (!sim2D) file << " " << x[2];
+				
+				for (const auto attr : attributes) {
+					if (attr == "velocity_magnitude") {
+						file << " " << model->getVelocity(i).norm();
+					}
+					else {
+						printf("%s export is not yet implemented.", attr.c_str());
+					}
+					
+					/*for (unsigned int j = 0; j < model->numberOfFields(); j++)
+					{
+						const FieldDescription& field = model->getField(j);
+						if (field.name == attr)
+						{
+							if (field.type == FieldType::Scalar)
+							{
+								float val = (float)*((Real*)field.getFct(i));
+								//TODO file << " " << val
+							}
+							else if (field.type == FieldType::UInt)
+							{
+								int val = (int)*((unsigned int*)field.getFct(i));
+								//TODO 
+							}
+							else if (field.type == FieldType::Vector3)
+							{
+								Eigen::Map<Vector3r> vec((Real*)field.getFct(i));
+								float x = (float)vec[0];
+								float y = (float)vec[1];
+								float z = (float)vec[2];
+								//TODO 
+							}
+							break;
+						}
+					}*/
+				}
+
+				file << std::endl;
+			}
 		}
 	}
 }
