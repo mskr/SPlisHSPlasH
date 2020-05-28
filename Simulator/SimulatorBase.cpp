@@ -156,7 +156,11 @@ void SimulatorBase::initParameters()
 	setGroup(Exporter::PARTICLE_EXPORT_ATTRIBUTES, "Export");
 	setDescription(Exporter::PARTICLE_EXPORT_ATTRIBUTES, "Attributes that are exported in the partio files (except id and position).");
 
-
+	createVectorParameter<Real>("gridExportRegionMin", "Region Min", 3u, Exporter::gridExportRegion.min().data());
+	createVectorParameter<Real>("gridExportRegionMax", "Region Max", 3u, Exporter::gridExportRegion.max().data());
+	createVectorParameter<unsigned int>("gridExportResolution", "Resolution", 3u, Exporter::gridExportResolution.data());
+	createStringParameter("gridExportExcludeModels", "Exclude Models", &Exporter::excludeModels);
+	createStringParameter("gridExportModelAttrMapping", "Attribute Mapping", &Exporter::modelAttrMapping);
 }
 
 void SimulatorBase::run()

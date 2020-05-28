@@ -8,8 +8,8 @@
 		"simulationMethod": 4,
 
 		"particleRadius": 0.05,
-		"timeStepSize": 0.01,
-		"cflMethod": 2,
+		"timeStepSize": 0.05,
+		"cflMethod": 0,
 		"cflFactor": 1,
 		"cflMaxTimeStepSize": 0.005,
 		"maxIterations": 100,
@@ -21,7 +21,15 @@
 		"velocityUpdateMethod": 0,
 		"enableDivergenceSolver": true,
 		"boundaryHandlingMethod": 2,
-		"pause": false
+		"pause": false,
+		"stopAt": 75,
+
+		"gridExportRegionMin": [ -10, -5, -5 ],
+		"gridExportRegionMax": [ 10, 5, 5 ],
+		"gridExportResolution": [ 100, 49, 49 ],
+		"gridExportExcludeModels": "",
+		"gridExportModelAttrMapping": "Fluid:velocity_magnitude",
+		"particleAttributes": "velocity_magnitude"
 	},
 	"Materials": [
 		{
