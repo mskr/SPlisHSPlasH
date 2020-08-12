@@ -1,20 +1,11 @@
 #include "PartioViewer_OpenGL.h"
 
-#include "GL/glew.h"
-
-#ifdef __APPLE__
-#include <OpenGL/GL.h>
-#include <OpenGL/GLU.h>
-#else
-#include "GL/gl.h"
-#include "GL/glu.h"
-#endif
-
-#include "GL/glut.h"
-#include "GL/freeglut_ext.h"
 #include "GUI/OpenGL/MiniGL.h"
 #include "GUI/OpenGL/colormaps/colormap_jet.h"
 #include "GUI/OpenGL/colormaps/colormap_plasma.h"
+#include "GUI/OpenGL/colormaps/colormap_bwr.h"
+#include "GUI/OpenGL/colormaps/colormap_coolwarm.h"
+#include "GUI/OpenGL/colormaps/colormap_seismic.h"
 #include "../../PartioViewer.h"
 
 using namespace std;
@@ -243,6 +234,12 @@ void PartioViewer_OpenGL::render(const Fluid &fluid, const Real particleRadius,
 			color_map = reinterpret_cast<float const*>(colormap_jet);
 		else if (colorMapType == 2)
 			color_map = reinterpret_cast<float const*>(colormap_plasma);
+		else if (colorMapType == 3)
+			color_map = reinterpret_cast<float const*>(colormap_coolwarm);
+		else if (colorMapType == 4)
+			color_map = reinterpret_cast<float const*>(colormap_bwr);
+		else if (colorMapType == 5)
+			color_map = reinterpret_cast<float const*>(colormap_seismic);
 
 		if (colorMapType == 0)
 		{
@@ -312,7 +309,7 @@ void PartioViewer_OpenGL::render(const Fluid &fluid, const Real particleRadius,
 	}
 	else
 	{
-		const Real supportRadius = particleRadius * 4.0;
+		const Real supportRadius = particleRadius * static_cast<Real>(4.0);
 		float fluidColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
 
 		Partio::ParticleAttribute attr;

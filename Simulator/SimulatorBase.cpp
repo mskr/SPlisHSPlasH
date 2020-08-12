@@ -171,7 +171,7 @@ void SimulatorBase::run()
 }
 
 void SimulatorBase::init(std::vector<std::string> argv, const std::string &windowName){
-	m_argc = argv.size();
+	m_argc = static_cast<int>(argv.size());
 	m_argv_vec.clear();
 	m_argv_vec.reserve(argv.size());
 	for (auto & a : argv)
@@ -200,6 +200,7 @@ void SimulatorBase::init(int argc, char **argv, const std::string &windowName)
 
 		options.add_options()
 			("h,help", "Print help")
+			("v,version", "Print version")
 			("no-cache", "Disable caching of boundary samples/maps.")
 			("state-file", "State file (state_<time>.bin) that should be loaded.", cxxopts::value<std::string>())
 			("output-dir", "Output directory for log file and partio files.", cxxopts::value<std::string>())
@@ -223,6 +224,12 @@ void SimulatorBase::init(int argc, char **argv, const std::string &windowName)
 		if (result.count("help"))
 		{
 			std::cout << options.help({ "" }) << std::endl;
+			exit(0);
+		}
+
+		if (result.count("version"))
+		{
+			std::cout << SPLISHSPLASH_VERSION << std::endl;
 			exit(0);
 		}
 
@@ -310,10 +317,11 @@ void SimulatorBase::init(int argc, char **argv, const std::string &windowName)
 	FileSystem::makeDirs(logPath);
 	Utilities::logger.addSink(unique_ptr<Utilities::FileSink>(new Utilities::FileSink(Utilities::LogLevel::DEBUG, logPath + "/SPH_log.txt")));
 
-	LOG_DEBUG << "Git refspec: " << GIT_REFSPEC;
-	LOG_DEBUG << "Git SHA1:    " << GIT_SHA1;
-	LOG_DEBUG << "Git status:  " << GIT_LOCAL_STATUS;
-	LOG_DEBUG << "Host name:   " << SystemInfo::getHostName();
+	LOG_INFO  << "SPlisHSPlasH version: " << SPLISHSPLASH_VERSION;
+	LOG_DEBUG << "Git refspec:          " << GIT_REFSPEC;
+	LOG_DEBUG << "Git SHA1:             " << GIT_SHA1;
+	LOG_DEBUG << "Git status:           " << GIT_LOCAL_STATUS;
+	LOG_DEBUG << "Host name:            " << SystemInfo::getHostName();
 
 	if (!getUseParticleCaching())
 		LOG_INFO << "Boundary cache disabled.";
@@ -877,7 +885,7 @@ void SimulatorBase::initFluidData()
 
 			std::string mode = to_string(m_scene.fluidModels[i]->mode);
 			const string scaleStr = real2String(m_scene.fluidModels[i]->scale[0]) + "_" + real2String(m_scene.fluidModels[i]->scale[1]) + "_" + real2String(m_scene.fluidModels[i]->scale[2]);
-			const string resStr = real2String(m_scene.fluidModels[i]->resolutionSDF[0]) + "_" + real2String(m_scene.fluidModels[i]->resolutionSDF[1]) + "_" + real2String(m_scene.fluidModels[i]->resolutionSDF[2]);
+			const string resStr = to_string(m_scene.fluidModels[i]->resolutionSDF[0]) + "_" + to_string(m_scene.fluidModels[i]->resolutionSDF[1]) + "_" + to_string(m_scene.fluidModels[i]->resolutionSDF[2]);
 			const string particleFileName = FileSystem::normalizePath(cachePath + "/" + mesh_file_name + "_fluid_" + real2String(m_scene.particleRadius) + "_m" + mode + "_s" + scaleStr + "_r" + resStr + ".bgeo");
 
 			// check MD5 if cache file is available
@@ -1951,7 +1959,7 @@ void SimulatorBase::initDensityMap(std::vector<Vector3r> &x, std::vector<unsigne
 
 	Eigen::Matrix<unsigned int, 3, 1> resolutionSDF = boundaryData->mapResolution;
 	const string scaleStr = "s" + real2String(boundaryData->scale[0]) + "_" + real2String(boundaryData->scale[1]) + "_" + real2String(boundaryData->scale[2]);
-	const string resStr = "r" + real2String(resolutionSDF[0]) + "_" + real2String(resolutionSDF[1]) + "_" + real2String(resolutionSDF[2]);
+	const string resStr = "r" + to_string(resolutionSDF[0]) + "_" + to_string(resolutionSDF[1]) + "_" + to_string(resolutionSDF[2]);
 	const string invertStr = "i" + to_string((int)boundaryData->mapInvert);
 	const string thicknessStr = "t" + real2String(boundaryData->mapThickness);
 	const string kernelStr = "k" + to_string(sim->getKernel());
@@ -2140,7 +2148,7 @@ void SimulatorBase::initVolumeMap(std::vector<Vector3r> &x, std::vector<unsigned
 
 	Eigen::Matrix<unsigned int, 3, 1> resolutionSDF = boundaryData->mapResolution;
 	const string scaleStr = "s" + real2String(boundaryData->scale[0]) + "_" + real2String(boundaryData->scale[1]) + "_" + real2String(boundaryData->scale[2]);
-	const string resStr = "r" + real2String(resolutionSDF[0]) + "_" + real2String(resolutionSDF[1]) + "_" + real2String(resolutionSDF[2]);
+	const string resStr = "r" + to_string(resolutionSDF[0]) + "_" + to_string(resolutionSDF[1]) + "_" + to_string(resolutionSDF[2]);
 	const string invertStr = "i" + to_string((int)boundaryData->mapInvert);
 	const string thicknessStr = "t" + real2String(boundaryData->mapThickness);
 	string volumeMapFileName = "";
