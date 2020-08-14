@@ -23,6 +23,7 @@ INIT_LOGGING
 using namespace Utilities;
 
 void saveParticleCloudVTK(const std::string & path, const Partio::ParticlesDataMutable * partioData);
+void saveParticleCloudASCII(const std::string & path, const Partio::ParticlesDataMutable * partioData);
 
 std::string inputFile = "";
 int startFrame = -1;
@@ -127,7 +128,7 @@ int main(int argc, char **argv)
 		LOG_INFO << "Successfully read file " << inputFile;
 		std::string outputFile = outDir + "/" + fileName + ".vtk";
 		LOG_INFO << "Writing file " << outputFile;
-		saveParticleCloudVTK(outputFile, partioData);
+		saveParticleCloudASCII(outputFile, partioData);
 		LOG_INFO << "Freeing data";
 		partioData->release();
 		LOG_INFO << "Done";
@@ -161,7 +162,7 @@ int main(int argc, char **argv)
 			LOG_INFO << "Successfully read file " << inputFileWithNumber;
 			std::string outputFile = outDir + "/" + fileNameWithNumber + ".vtk";
 			LOG_INFO << "Writing file " << outputFile;
-			saveParticleCloudVTK(outputFile, partioData);
+			saveParticleCloudASCII(outputFile, partioData);
 			LOG_INFO << "Freeing data";
 			partioData->release();
 		}
@@ -355,6 +356,125 @@ void saveParticleCloudVTK(const std::string & path, const Partio::ParticlesDataM
 		// end of block
 		outfile << "\n";
 	}
+	outfile.close();
+	STOP_TIMING_AVG;
+}
+
+void saveParticleCloudASCII(const std::string & path, const Partio::ParticlesDataMutable * partioData)
+{
+	const unsigned int numParticles = partioData->numParticles();
+	if (0 == numParticles)
+		return;
+
+	START_TIMING("Writing ASCII file");
+	// Open the file
+	std::ofstream outfile{ path, std::ios::binary };
+	if (!outfile.is_open()) {
+		LOG_ERR << "Cannot open a file to save a VTK mesh.";
+		exit(-1);
+	}
+
+	outfile << "cellnumber x-coordinate y-coordinate z-coordinate x-velocity y-velocity z-velocity" <<std::endl;
+
+	//////////////////////////////////////////////////////////////////////////
+	// find indices of position and ID attribute
+	unsigned int posIndex = 0xffffffff;
+	unsigned int idIndex = 0xffffffff;
+	for (int i = 0; i < partioData->numAttributes(); i++)
+	{
+		Partio::ParticleAttribute attr;
+		partioData->attributeInfo(i, attr);
+		if (attr.name == "position")
+			posIndex = i;
+		else if (attr.name == "id")
+			idIndex = i;
+
+		LOG_INFO << "Found attribute: " << attr.name;
+	}
+
+	std::vector<unsigned int> writeIDs;
+
+	//////////////////////////////////////////////////////////////////////////
+	// export particle IDs (faked by indices) as cellnumber
+	{
+		for (unsigned int i = 0u; i < numParticles; i++)
+		{
+			writeIDs.push_back(i);
+		}
+	}
+	
+	std::vector<Vector3f> writePositions;
+
+	//////////////////////////////////////////////////////////////////////////
+	// export position attribute as coordinates
+	if (0xffffffff != posIndex)
+	{
+		// copy from partio data
+		writePositions.reserve(numParticles);
+		Partio::ParticleAttribute attr;
+		partioData->attributeInfo(posIndex, attr);
+		for (unsigned int i = 0u; i < numParticles; i++)
+			writePositions.emplace_back(partioData->data<float>(attr, i));
+
+	}
+	else
+	{
+		LOG_ERR << "No particle positions found!";
+		STOP_TIMING_AVG;
+		return;
+	}
+	
+	std::vector<Vector3f> writeVelocities;
+
+	//////////////////////////////////////////////////////////////////////////
+	// write additional attributes as per-particle data
+
+	// iterate over attributes
+	for (int a = 0; a < partioData->numAttributes(); a++)
+	{
+		if (posIndex == a || idIndex == a)
+			continue;
+
+		Partio::ParticleAttribute attr;
+		partioData->attributeInfo(a, attr);
+		std::string attrNameVTK;
+		std::regex_replace(std::back_inserter(attrNameVTK), attr.name.begin(), attr.name.end(), std::regex("\\s+"), "_");
+
+		LOG_INFO << attr.name << " found.\n";
+
+		if (attr.type == Partio::ParticleAttributeType::VECTOR)
+		{
+
+			LOG_INFO << "Consider " << attr.name << " as velocity.\n";
+
+			// copy from partio data
+			writeVelocities.reserve(partioData->numParticles());
+			for (unsigned int i = 0u; i < numParticles; i++)
+				writeVelocities.emplace_back(partioData->data<float>(attr, i));
+		}
+		else
+		{
+			LOG_WARN << "Skipping attribute " << attr.name << ", because it is of unsupported type " << Partio::TypeName(attr.type) << "\n";
+			continue;
+		}
+	}
+	
+	for (size_t i = 0; i < numParticles; i++) {
+		outfile << writeIDs[i];
+
+		outfile << " ";
+
+		auto x = writePositions[i];
+		outfile << (float)x[0] << " " << (float)x[1] << " " << (float)x[2];
+
+		outfile << " ";
+
+		auto v = writeVelocities[i];
+		outfile << (float)v[0] << " " << (float)v[1] << " " << (float)v[2];
+
+		outfile << std::endl;
+	}
+
 	outfile.close();
 	STOP_TIMING_AVG;
 }

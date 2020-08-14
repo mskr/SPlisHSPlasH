@@ -696,8 +696,11 @@ void SimulatorBase::reset()
 void SimulatorBase::timeStep()
 {
 	const Real stopAt = getValue<Real>(SimulatorBase::STOP_AT);
-	if (m_gui && (stopAt > 0.0) && (stopAt < TimeManager::getCurrent()->getTime()))
+	if (m_gui && (stopAt > 0.0) && (stopAt < TimeManager::getCurrent()->getTime())) {
+		particleExport();
+		rigidBodyExport();
 		m_gui->stop();
+	}
 
 	const Real pauseAt = getValue<Real>(SimulatorBase::PAUSE_AT);
 	if ((pauseAt > 0.0) && (pauseAt < TimeManager::getCurrent()->getTime()))
@@ -1224,6 +1227,30 @@ void SimulatorBase::rigidBodyExport()
 	}
 }
 
+void writeAscii(std::string fileName, FluidModel* model) {
+	std::ofstream file(fileName);
+	file << "cellnumber x-coordinate y-coordinate z-coordinate x-velocity y-velocity z-velocity" <<std::endl;
+	
+	const unsigned int numParticles = model->numActiveParticles();
+
+	for (unsigned int i = 0; i < numParticles; i++) {
+	
+		file << i << " ";
+		
+		const Vector3r &x = model->getPosition(i);
+		file << (float)x[0] << " " << (float)x[1] << " " << (float)x[2];
+
+		file << " ";
+		
+		//const Vector3r &v = model->getVelocity(i);
+		auto velocityField = model->getField("velocity");
+		Eigen::Map<Vector3r> v((Real*) velocityField.getFct(i));
+		file << (float)v[0] << " " << (float)v[1] << " " << (float)v[2];
+
+		file << std::endl;
+	}
+}
+
 void SimulatorBase::particleExport()
 {	
 	std::string partioExportPath = FileSystem::normalizePath(m_outputPath + "/partio");
@@ -1232,6 +1259,9 @@ void SimulatorBase::particleExport()
 		FileSystem::makeDirs(partioExportPath);
 	if (m_enableVTKExport)
 		FileSystem::makeDirs(vtkExportPath);
+
+	std::string asciiExportPath = FileSystem::normalizePath(m_outputPath + "/ascii");
+	FileSystem::makeDirs(asciiExportPath);
 
 	Simulation *sim = Simulation::getCurrent();
 	for (unsigned int i = 0; i < sim->numberOfFluidModels(); i++)
@@ -1250,6 +1280,8 @@ void SimulatorBase::particleExport()
 			std::string exportFileName = FileSystem::normalizePath(vtkExportPath + "/" + fileName);
 			writeParticlesVTK(exportFileName + ".vtk", model);
 		}
+
+		writeAscii(FileSystem::normalizePath(asciiExportPath + "/" + fileName) + ".txt", model);
 	}
 }
 
@@ -1707,9 +1739,9 @@ void SimulatorBase::step()
 	{
 		m_nextFrameTime += static_cast<Real>(1.0) / m_framesPerSecond;
 		if (m_enablePartioExport || m_enableVTKExport)
-			particleExport();
+			//particleExport();
 		if (m_enableRigidBodyExport || m_enableRigidBodyVTKExport)
-			rigidBodyExport();
+			//rigidBodyExport();
 		m_frameCounter++;
 	}
 	if (TimeManager::getCurrent()->getTime() >= m_nextFrameTimeState)
